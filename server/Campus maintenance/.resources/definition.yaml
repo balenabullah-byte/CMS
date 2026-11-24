@@ -1,0 +1,15 @@
+$kind: collection
+description: ""
+variables:
+  baseUrl: http://127.0.0.1:3000/api
+  email: ""
+  password: ""
+  newPassword: ""
+  buildingId: ""
+  roomId: ""
+  categoryId: ""
+  userId: ""
+  roleId: ""
+  technicianId: ""
+  requestId: ""
+  assignmentId: ""

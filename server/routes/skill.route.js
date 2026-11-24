@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import controller from '../controller/skill.controller.js';
+import schemas from '../validation/skill.validation.js';
+import validate from '../middleware/validate.middleware.js';
+import authenticate from '../middleware/auth.middleware.js';
+import allow from '../middleware/role.middleware.js';
+const router = Router();
+router.get('/technician-skills', authenticate, allow('admin', 'coordinator'), validate(schemas.list), controller.list);
+router.post('/technician-skills', authenticate, allow('admin'), validate(schemas.add), controller.add);
+router.delete('/technician-skills/:technician_id/:category_id', authenticate, allow('admin'), validate(schemas.remove), controller.remove);
+export default router;

@@ -1,0 +1,21 @@
+$kind: http-request
+name: POST /maintenance-requests
+description: 'Access: campus_member. Success: 201, JSON with a data field. Errors use {"error":"message"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.'
+url: "{{baseUrl}}/maintenance-requests"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+      "building_id": "{{buildingId}}",
+      "category_id": "{{categoryId}}",
+      "title": "Light flickers",
+      "description": "Ceiling light flickers in the lab."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));
+      pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));
+    language: text/javascript
+order: 2000

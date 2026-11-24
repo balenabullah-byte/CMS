@@ -1,0 +1,1430 @@
+{
+  "info": {
+    "name": "Campus Postman Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Set email and password and send POST /auth/login. Postman uses the session cookie for subsequent requests. Use an account with the role listed in each request and set ID variables to records in your test database."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "newPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "buildingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "roomId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "categoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "roleId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "technicianId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "requestId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assignmentId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "description": "Access: public. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "building",
+      "item": [
+        {
+          "name": "GET /buildings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/buildings",
+            "description": "Access: any signed-in user. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /buildings/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/buildings/{{buildingId}}",
+            "description": "Access: any signed-in user. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /buildings",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/buildings",
+            "description": "Access: admin. Success: 201, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"LAB-A\",\n  \"name\": \"Science lab\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /buildings/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/buildings/{{buildingId}}",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Science lab\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "room",
+      "item": [
+        {
+          "name": "GET /rooms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/rooms",
+            "description": "Access: any signed-in user. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /rooms/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/rooms/{{roomId}}",
+            "description": "Access: any signed-in user. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /rooms",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/rooms",
+            "description": "Access: admin. Success: 201, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"building_id\": \"{{buildingId}}\",\n  \"room_code\": \"101\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /rooms/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/rooms/{{roomId}}",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"room_code\": \"101\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "category",
+      "item": [
+        {
+          "name": "GET /maintenance-categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/maintenance-categories",
+            "description": "Access: any signed-in user. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /maintenance-categories/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/maintenance-categories/{{categoryId}}",
+            "description": "Access: any signed-in user. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /maintenance-categories",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenance-categories",
+            "description": "Access: admin. Success: 201, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"LIGHT\",\n  \"name\": \"Lighting\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /maintenance-categories/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenance-categories/{{categoryId}}",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Lighting\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "user",
+      "item": [
+        {
+          "name": "GET /users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /users/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users/{{userId}}",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /users",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users",
+            "description": "Access: admin. Success: 201, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"member@example.edu\",\n  \"full_name\": \"Demo Member\",\n  \"member_type\": \"student\",\n  \"password\": \"{{newPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /users/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{userId}}",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Demo Member\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /users/:id/roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users/{{userId}}/roles",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /users/:id/roles",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/users/{{userId}}/roles",
+            "description": "Access: admin. Success: 201, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role_id\": \"{{roleId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /users/:id/roles/:role_id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/users/{{userId}}/roles/{{roleId}}",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "role",
+      "item": [
+        {
+          "name": "GET /roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/roles",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /roles/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/roles/{{roleId}}",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /roles/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/roles/{{roleId}}",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Campus role\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "POST /auth/login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "description": "Access: public. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /auth/logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/auth/logout",
+            "description": "Access: any signed-in user. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/me",
+            "description": "Access: any signed-in user. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "skill",
+      "item": [
+        {
+          "name": "GET /technician-skills",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/technician-skills",
+            "description": "Access: admin coordinator. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /technician-skills",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/technician-skills",
+            "description": "Access: admin. Success: 201, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"technician_id\": \"{{technicianId}}\",\n  \"category_id\": \"{{categoryId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /technician-skills/:technician_id/:category_id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/technician-skills/{{technicianId}}/{{categoryId}}",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "maintenance",
+      "item": [
+        {
+          "name": "GET /maintenance-requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/maintenance-requests",
+            "description": "Access: campus_member coordinator technician. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /maintenance-requests",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenance-requests",
+            "description": "Access: campus_member. Success: 201, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"building_id\": \"{{buildingId}}\",\n  \"category_id\": \"{{categoryId}}\",\n  \"title\": \"Light flickers\",\n  \"description\": \"Ceiling light flickers in the lab.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /maintenance-requests/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/maintenance-requests/{{requestId}}",
+            "description": "Access: campus_member coordinator technician. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/statistics",
+            "description": "Access: admin. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /maintenance-requests/:id/approve",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenance-requests/{{requestId}}/approve",
+            "description": "Access: coordinator. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Inspection verified\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /maintenance-requests/:id/reject",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenance-requests/{{requestId}}/reject",
+            "description": "Access: coordinator. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Further inspection needed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /maintenance-requests/:id/close",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenance-requests/{{requestId}}/close",
+            "description": "Access: coordinator. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Inspection verified\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /maintenance-requests/:id/reopen",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenance-requests/{{requestId}}/reopen",
+            "description": "Access: coordinator. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Further inspection needed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /maintenance-requests/:id/priority",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenance-requests/{{requestId}}/priority",
+            "description": "Access: coordinator. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"priority\": \"high\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /maintenance-requests/:id/history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/maintenance-requests/{{requestId}}/history",
+            "description": "Access: campus_member coordinator technician. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /maintenance-requests/:id/comments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/maintenance-requests/{{requestId}}/comments",
+            "description": "Access: campus_member coordinator technician. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /maintenance-requests/:id/comments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenance-requests/{{requestId}}/comments",
+            "description": "Access: campus_member coordinator technician. Success: 201, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Additional details\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assignment",
+      "item": [
+        {
+          "name": "POST /maintenance-requests/:id/assignments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenance-requests/{{requestId}}/assignments",
+            "description": "Access: coordinator. Success: 201, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"technician_id\": \"{{technicianId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /maintenance-requests/:id/reassign",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenance-requests/{{requestId}}/reassign",
+            "description": "Access: coordinator. Success: 201, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"technician_id\": \"{{technicianId}}\",\n  \"note\": \"Change of shift\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /assignments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/assignments",
+            "description": "Access: technician coordinator. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /assignments/:id/start",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/assignments/{{assignmentId}}/start",
+            "description": "Access: technician. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /assignments/:id/progress",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/assignments/{{assignmentId}}/progress",
+            "description": "Access: technician. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Inspecting fixture\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /assignments/:id/complete",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/assignments/{{assignmentId}}/complete",
+            "description": "Access: technician. Success: 200, JSON with a data field. Errors use {\"error\":\"message\"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completion_note\": \"Replaced fixture\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

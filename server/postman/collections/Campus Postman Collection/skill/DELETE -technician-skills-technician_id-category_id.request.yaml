@@ -1,0 +1,14 @@
+$kind: http-request
+name: 'DELETE /technician-skills/:technician_id/:category_id'
+description: 'Access: admin. Success: 200, JSON with a data field. Errors use {"error":"message"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.'
+method: DELETE
+url: '{{baseUrl}}/technician-skills/{{technicianId}}/{{categoryId}}'
+order: 3000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Status 200 OK', () => pm.response.to.have.status(200));
+      pm.test('Response time < 2000ms', () => pm.expect(pm.response.responseTime).to.be.below(2000));
+      pm.test('Content-Type is JSON', () => pm.response.to.have.header('Content-Type', /application\/json/));
+      pm.test('Response has data field', () => pm.expect(pm.response.json()).to.have.property('data'));

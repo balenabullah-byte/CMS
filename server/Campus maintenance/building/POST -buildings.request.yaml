@@ -1,0 +1,19 @@
+$kind: http-request
+name: POST /buildings
+description: 'Access: admin. Success: 201, JSON with a data field. Errors use {"error":"message"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.'
+url: "{{baseUrl}}/buildings"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+      "code": "LAB-A",
+      "name": "Science lab"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Expected HTTP 201', () => pm.response.to.have.status(201));
+      pm.test('JSON result', () => pm.expect(pm.response.json()).to.have.property('data'));
+    language: text/javascript
+order: 3000

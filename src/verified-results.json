@@ -1,0 +1,578 @@
+[
+  {
+    "name": "GET /health (public)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /auth/login (public)",
+    "status": 400,
+    "expected": 400,
+    "pass": true
+  },
+  {
+    "name": "POST /auth/login (public)",
+    "status": 401,
+    "expected": 401,
+    "pass": true
+  },
+  {
+    "name": "POST /auth/login (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /me (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /roles (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /users (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /users/2/roles (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /auth/login (campus_member)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /users (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /users/3/roles (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /auth/login (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /users (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /users/4/roles (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /auth/login (technician)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /users (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /users/5/roles (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /auth/login (other)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /users (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /users (campus_member)",
+    "status": 403,
+    "expected": 403,
+    "pass": true
+  },
+  {
+    "name": "GET /users/5 (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /users/5 (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /users/5/roles (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /roles/1 (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /roles/1 (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /buildings (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /buildings (admin)",
+    "status": 409,
+    "expected": 409,
+    "pass": true
+  },
+  {
+    "name": "POST /buildings (admin)",
+    "status": 400,
+    "expected": 400,
+    "pass": true
+  },
+  {
+    "name": "PATCH /buildings/1 (admin)",
+    "status": 400,
+    "expected": 400,
+    "pass": true
+  },
+  {
+    "name": "GET /buildings/99999 (campus_member)",
+    "status": 404,
+    "expected": 404,
+    "pass": true
+  },
+  {
+    "name": "POST /rooms (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-categories (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "GET /buildings (campus_member)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /buildings/1 (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /buildings/1 (campus_member)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /rooms (campus_member)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /rooms/1 (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /rooms/1 (campus_member)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /maintenance-categories (campus_member)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-categories/7 (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /maintenance-categories/7 (campus_member)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /technician-skills (admin)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "GET /technician-skills (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "DELETE /technician-skills/4/7 (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests (campus_member)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests (campus_member)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "GET /maintenance-requests (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /maintenance-requests/1 (other)",
+    "status": 404,
+    "expected": 404,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-requests/1/close (technician)",
+    "status": 403,
+    "expected": 403,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-requests/2/reject (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /maintenance-requests/2/history (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-requests/2/reopen (coordinator, rejected is terminal)",
+    "status": 409,
+    "expected": 409,
+    "pass": true
+  },
+  {
+    "name": "GET /maintenance-requests/2 (campus_member)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /maintenance-requests/2/history (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-requests/1/close (coordinator)",
+    "status": 409,
+    "expected": 409,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-requests/1/approve (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-requests/1/priority (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests/1/comments (campus_member)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests/1/comments (campus_member)",
+    "status": 403,
+    "expected": 403,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests/1/assignments (coordinator)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests/1/assignments (coordinator)",
+    "status": 409,
+    "expected": 409,
+    "pass": true
+  },
+  {
+    "name": "PATCH /assignments/1/complete (technician)",
+    "status": 409,
+    "expected": 409,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests/1/reassign (coordinator)",
+    "status": 409,
+    "expected": 409,
+    "pass": true
+  },
+  {
+    "name": "GET /assignments (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests/1/reassign (coordinator)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "PATCH /assignments/1/start (technician)",
+    "status": 404,
+    "expected": 404,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-requests/1/reopen (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests/1/assignments (coordinator)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "PATCH /assignments/3/start (technician)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-requests/1/reopen (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests/1/assignments (coordinator)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "PATCH /assignments/4/start (technician)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /assignments/4/progress (technician)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /maintenance-requests/1/comments (campus_member)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /assignments/4/complete (technician)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-requests/1/reopen (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests/1/assignments (coordinator)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "PATCH /assignments/5/start (technician)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /assignments/5/complete (technician)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-requests/1/close (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "PATCH /maintenance-requests/1/reopen (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /assignments (technician)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /maintenance-requests/1/history (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests/1/assignments (concurrent coordinator 1)",
+    "status": 201,
+    "expected": 201,
+    "pass": true
+  },
+  {
+    "name": "POST /maintenance-requests/1/assignments (concurrent coordinator 2)",
+    "status": 409,
+    "expected": 409,
+    "pass": true
+  },
+  {
+    "name": "GET /assignments (coordinator)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /statistics (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "DELETE /users/5/roles/1 (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /maintenance-requests (other)",
+    "status": 403,
+    "expected": 403,
+    "pass": true
+  },
+  {
+    "name": "PATCH /users/5 (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /me (other)",
+    "status": 401,
+    "expected": 401,
+    "pass": true
+  },
+  {
+    "name": "PATCH /users/5 (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /me (other)",
+    "status": 401,
+    "expected": 401,
+    "pass": true
+  },
+  {
+    "name": "POST /auth/logout (admin)",
+    "status": 200,
+    "expected": 200,
+    "pass": true
+  },
+  {
+    "name": "GET /me (admin, revoked cookie)",
+    "status": 401,
+    "expected": 401,
+    "pass": true
+  },
+  {
+    "name": "GET /me (public)",
+    "status": 401,
+    "expected": 401,
+    "pass": true
+  }
+]

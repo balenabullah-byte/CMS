@@ -1,0 +1,24 @@
+$kind: http-request
+name: 'GET /me'
+description: 'Access: any signed-in user. Success: 200, JSON with a data field. Errors use {"error":"message"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.'
+method: GET
+url: '{{baseUrl}}/me'
+order: 3000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Status 200 OK', () => pm.response.to.have.status(200));
+      pm.test('Response time < 2000ms', () => pm.expect(pm.response.responseTime).to.be.below(2000));
+      pm.test('Content-Type is JSON', () => pm.response.to.have.header('Content-Type', /application\/json/));
+      pm.test('Response has data field', () => pm.expect(pm.response.json()).to.have.property('data'));
+      pm.test('Data contains user profile fields', () => {
+        const data = pm.response.json().data;
+        pm.expect(data).to.be.an('object');
+        pm.expect(data).to.have.property('id');
+        pm.expect(data).to.have.property('email');
+      });
+      pm.test('Password not exposed in response', () => {
+        const body = JSON.stringify(pm.response.json());
+        pm.expect(body).to.not.include('"password"');
+      });

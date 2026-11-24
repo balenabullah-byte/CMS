@@ -1,0 +1,730 @@
+:root {
+  color-scheme: light dark;
+  --canvas: light-dark(#f8fafc, #111923);
+  --surface: light-dark(#fff, #192431);
+  --ink: light-dark(#0f172a, #eff4fa);
+  --muted: light-dark(#475569, #b6c5d6);
+  --edge: light-dark(#dbe2ec, #45566a);
+  --link: light-dark(#174dbd, #9bc5ff);
+  --accent: light-dark(#2563eb, #235ac4);
+  --hover: light-dark(#1d4ed8, #214ea8);
+  --focus: light-dark(#2458c0, #a8ceff);
+  --subtle: light-dark(#e9edf3, #2a3849);
+  --selected: light-dark(#e9f2ff, #253c59);
+  --control: light-dark(#8998ac, #798da4);
+  --good-bg: light-dark(#def5e3, #203e32);
+  --good: light-dark(#176335, #9fe9ba);
+  --bad-bg: light-dark(#fde4e5, #502c35);
+  --bad: light-dark(#9b2835, #ffc4ca);
+  --warn-bg: light-dark(#fff1ce, #48391f);
+  --warn: light-dark(#804d00, #ffda8c);
+  background: var(--canvas);
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+@font-face {
+  font-family: Inter;
+  src: url('/fonts/Inter-Regular.otf') format('opentype');
+  font-weight: 100 549;
+  font-display: swap;
+}
+@font-face {
+  font-family: Inter;
+  src: url('/fonts/Inter-SemiBold.otf') format('opentype');
+  font-weight: 550 900;
+  font-display: swap;
+}
+.workspace {
+  background: var(--canvas);
+  color: var(--ink);
+  font:
+    400 16px/1.5 Inter,
+    'Segoe UI',
+    Arial,
+    sans-serif;
+  min-height: 100dvh;
+}
+.workspace * {
+  box-sizing: border-box;
+}
+.workspace svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.75;
+  flex-shrink: 0;
+}
+.workspace a,
+.workspace .textbtn {
+  color: var(--link);
+  text-decoration: none;
+}
+.workspace a:hover,
+.workspace .textbtn:hover {
+  text-decoration: underline;
+}
+.workspace :focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.workspace h1,
+.workspace h2,
+.workspace h3,
+.workspace b,
+.workspace strong {
+  font-weight: 650;
+}
+.workspace h1 {
+  font-size: clamp(28px, 2.6vw, 40px);
+  line-height: 1.16;
+  letter-spacing: -0.04em;
+}
+.workspace h2 {
+  font-size: clamp(20px, 1.7vw, 26px);
+  letter-spacing: -0.035em;
+  line-height: 1.25;
+}
+.workspace h3 {
+  font-size: 18px;
+}
+.workspace p {
+  margin: 0.5rem 0;
+}
+.workspace small {
+  display: block;
+  color: var(--muted);
+  font-size: 14px;
+}
+.workspace.layout {
+  --rail: clamp(238px, 18.55vw, 280px);
+  display: grid;
+  grid-template-columns: var(--rail) minmax(0, 1fr);
+}
+.workspace.layout.compact {
+  --rail: 68px;
+}
+.workspace aside {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  background: var(--surface);
+  border-right: 1px solid var(--edge);
+  display: flex;
+  flex-direction: column;
+  padding: 0 14px;
+}
+.workspace .brandline {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 21px 8px;
+  border-bottom: 1px solid var(--edge);
+  font-size: 21px;
+  line-height: 1.16;
+  letter-spacing: -0.035em;
+}
+.workspace .brandline svg {
+  width: 34px;
+  height: 34px;
+}
+.workspace aside nav {
+  padding-top: 30px;
+}
+.workspace nav a,
+.workspace .railfoot a,
+.workspace .railfoot button {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 13px 12px;
+  border-radius: 8px;
+  color: var(--ink);
+  min-height: 48px;
+  text-align: left;
+  font-weight: 500;
+}
+.workspace nav a.selected,
+.workspace nav a[aria-current='page'] {
+  background: var(--selected);
+  color: var(--link);
+}
+.workspace .railfoot {
+  margin-top: auto;
+  border-top: 1px solid var(--edge);
+  padding: 8px 0;
+}
+.workspace .railfoot button {
+  width: 100%;
+  font-size: 14px;
+  color: var(--muted);
+}
+.workspace.compact aside span,
+.workspace.compact aside .brandline b {
+  display: none;
+}
+.workspace.compact aside {
+  padding: 0 7px;
+}
+.workspace.compact aside a,
+.workspace.compact aside button {
+  justify-content: center;
+}
+.workspace main {
+  padding: 22px clamp(18px, 1.6vw, 32px) 42px;
+  min-width: 0;
+  outline: none;
+}
+.workspace .pagehead,
+.workspace .split,
+.workspace .listrow,
+.workspace .pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.workspace .pagehead {
+  margin-bottom: 42px;
+  padding: 0 6px;
+}
+.workspace .account,
+.workspace .inline,
+.workspace .actions,
+.workspace .toolbar,
+.workspace .tabs {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.workspace .account {
+  color: var(--ink);
+  font-size: 15px;
+}
+.workspace .account svg {
+  box-sizing: content-box;
+  padding: 9px;
+  border-radius: 50%;
+  background: var(--subtle);
+}
+.workspace .stack {
+  display: grid;
+  gap: 22px;
+  align-content: start;
+}
+.workspace .panel,
+.workspace .loginpanel {
+  padding: clamp(16px, 1.4vw, 24px);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 3px 12px #15264205;
+  min-width: 0;
+}
+.workspace .queues {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 18px;
+}
+.workspace .split {
+  margin-bottom: 16px;
+}
+.workspace .split > a {
+  font-weight: 550;
+}
+.workspace .queue-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 5px;
+  border-top: 1px solid var(--edge);
+  color: var(--ink);
+  min-height: 80px;
+}
+.workspace .queue-row div {
+  min-width: 0;
+  flex: 1;
+}
+.workspace .queue-row strong,
+.workspace .queue-row b,
+.workspace .records td span:not(.badge-state),
+.workspace .records td strong {
+  display: block;
+}
+.workspace .queue-row strong,
+.workspace .records strong {
+  font-size: 14px;
+}
+.workspace .queue-row small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.workspace .queue-row small svg {
+  width: 15px;
+  height: 15px;
+}
+.workspace .badge-state {
+  display: inline-block;
+  border-radius: 20px;
+  padding: 3px 10px;
+  background: var(--subtle);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.workspace .tone-submitted,
+.workspace .tone-in_progress,
+.workspace .tone-assigned {
+  background: var(--selected);
+  color: var(--link);
+}
+.workspace .tone-approved,
+.workspace .tone-low,
+.workspace .tone-closed {
+  background: var(--good-bg);
+  color: var(--good);
+}
+.workspace .tone-high,
+.workspace .tone-rejected {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+.workspace .tone-reopened,
+.workspace .tone-normal {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+.workspace .records {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.workspace .records th,
+.workspace .records td {
+  padding: 10px 14px;
+  text-align: left;
+}
+.workspace .records th {
+  background: var(--subtle);
+  font-weight: 600;
+}
+.workspace .records td {
+  border-bottom: 1px solid var(--edge);
+}
+.workspace .records tr:last-child td {
+  border: 0;
+}
+.workspace .records td a {
+  color: var(--ink);
+}
+.workspace .records td {
+  overflow-wrap: anywhere;
+}
+.workspace .queue-row b,
+.workspace .detailhead,
+.workspace .listrow,
+.workspace .entry {
+  overflow-wrap: anywhere;
+}
+.workspace .actions,
+.workspace .toolbar,
+.workspace .tabs {
+  flex-wrap: wrap;
+}
+.workspace .toolbar {
+  align-items: end;
+  margin-bottom: 18px;
+}
+.workspace form,
+.workspace label {
+  display: grid;
+  gap: 8px;
+}
+.workspace form {
+  gap: 15px;
+}
+.workspace .panel > form {
+  margin-top: 16px;
+}
+.workspace label {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.workspace input,
+.workspace select,
+.workspace textarea {
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 400;
+  background: var(--surface);
+  border: 1px solid var(--control);
+  border-radius: 7px;
+  padding: 10px 12px;
+  color: var(--ink);
+  max-width: 100%;
+  min-width: 0;
+}
+.workspace textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+.workspace .check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.workspace .check input {
+  width: 18px;
+  height: 18px;
+}
+.workspace button {
+  cursor: pointer;
+}
+.workspace button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.workspace .primary,
+.workspace .secondary,
+.workspace .tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  justify-self: start;
+  padding: 9px 16px;
+  border-radius: 7px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.workspace .primary,
+.workspace .tabs [aria-pressed='true'] {
+  background: var(--accent);
+  color: white;
+}
+.workspace .primary:hover {
+  background: var(--hover);
+  text-decoration: none;
+}
+.workspace .secondary,
+.workspace .tabs button:not([aria-pressed='true']) {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--control);
+}
+.workspace .textbtn {
+  min-height: 44px;
+}
+.workspace .listrow,
+.workspace .entry {
+  padding: 13px 0;
+  border-top: 1px solid var(--edge);
+}
+.workspace .detailgrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+  gap: 20px;
+}
+.workspace .detailhead {
+  padding: 12px 0 18px;
+}
+.workspace .detailhead h2 {
+  font-size: clamp(24px, 2vw, 32px);
+}
+.workspace .detailhead p,
+.workspace .empty,
+.workspace .muted {
+  color: var(--muted);
+}
+.workspace .empty {
+  padding: 15px 0;
+}
+.workspace .narrow {
+  max-width: 760px;
+}
+.workspace .prose {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.workspace .error,
+.workspace .notice {
+  padding: 10px 14px;
+  border-radius: 7px;
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+.workspace .notice {
+  background: var(--good-bg);
+  color: var(--good);
+  display: flex;
+  justify-content: space-between;
+}
+.workspace .notice button {
+  font-size: 20px;
+}
+.workspace .facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 20px;
+  margin: 18px 0;
+}
+.workspace .facts dt {
+  color: var(--muted);
+}
+.workspace .pager {
+  justify-content: flex-end;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.workspace .chart {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+}
+.workspace .chart > div {
+  display: grid;
+  grid-template-columns: 110px 1fr 40px;
+  align-items: center;
+  gap: 12px;
+}
+.workspace .chart i {
+  background: var(--subtle);
+  border-radius: 3px;
+  height: 10px;
+  display: block;
+}
+.workspace .chart i i {
+  background: var(--accent);
+}
+.workspace.signin {
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+.workspace .loginpanel {
+  width: min(100%, 420px);
+  padding: 30px;
+}
+.workspace .loginpanel .brandline {
+  padding: 0 0 18px;
+}
+.workspace .loginpanel h1 {
+  margin: 18px 0;
+}
+.workspace .loginpanel button {
+  width: 100%;
+}
+.workspace .skip {
+  position: fixed;
+  top: -80px;
+  left: 8px;
+  background: var(--surface);
+  padding: 12px;
+  z-index: 10;
+}
+.workspace .skip:focus {
+  top: 8px;
+}
+.workspace .mobilebar {
+  display: none;
+}
+.workspace .drawer {
+  background: var(--surface);
+  color: var(--ink);
+  padding: 20px;
+  border: 0;
+  width: min(320px, 86vw);
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+}
+.workspace .drawer::backdrop {
+  background: #0f172a66;
+}
+.workspace .drawer button,
+.workspace .mobilebar button {
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .workspace.layout {
+    --rail: 220px;
+  }
+  .workspace.layout.compact {
+    --rail: 68px;
+  }
+  .workspace .queues {
+    grid-template-columns: 1fr;
+  }
+  .workspace .detailgrid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 767px) {
+  .workspace.layout {
+    display: block;
+  }
+  .workspace aside {
+    display: none;
+  }
+  .workspace .mobilebar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--edge);
+  }
+  .workspace main {
+    padding: 18px 16px 32px;
+  }
+  .workspace .pagehead {
+    margin-bottom: 20px;
+    padding: 0;
+  }
+  .workspace .account {
+    font-size: 0;
+  }
+  .workspace .queues,
+  .workspace .detailgrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .workspace .split {
+    flex-wrap: wrap;
+  }
+  .workspace .stack {
+    gap: 16px;
+  }
+  .workspace .queue-row {
+    gap: 8px;
+  }
+  .workspace .panel {
+    padding: 15px;
+  }
+  .workspace .records {
+    font-size: 13px;
+  }
+  .workspace .records th,
+  .workspace .records td {
+    padding: 9px 4px;
+  }
+  .workspace .records th:first-child {
+    width: 40%;
+  }
+  .workspace .records .badge-state {
+    font-size: 11px;
+    padding: 3px 5px;
+  }
+  .workspace .toolbar label {
+    width: 100%;
+  }
+  .workspace .listrow {
+    flex-wrap: wrap;
+  }
+  .workspace form > .primary {
+    width: 100%;
+  }
+  .workspace .pager {
+    justify-content: space-between;
+  }
+  .workspace .facts {
+    grid-template-columns: 1fr;
+  }
+  .workspace .facts dd {
+    overflow-wrap: anywhere;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .workspace .primary,
+  .workspace nav a {
+    transition: background-color 0.15s;
+  }
+  .workspace.layout {
+    transition: grid-template-columns 0.15s;
+  }
+}
+
+.workspace .building-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.workspace .building-cell svg {
+  width: 16px;
+  height: 16px;
+}
+.workspace .job-description summary {
+  cursor: pointer;
+  font-weight: 650;
+  font-size: 20px;
+}
+.workspace .job-title {
+  font-size: clamp(24px, 2.4vw, 34px);
+}
+@media (min-width: 768px) {
+  .workspace .request-table {
+    table-layout: fixed;
+  }
+  .workspace .request-table th:first-child {
+    width: 36%;
+  }
+  .workspace .request-table th:nth-child(2) {
+    width: 25%;
+  }
+  .workspace .request-table th:nth-child(3) {
+    width: 22%;
+  }
+}
+@media (max-width: 767px) {
+  .workspace .building-cell svg {
+    display: none;
+  }
+  .workspace .detailhead {
+    padding: 0;
+  }
+}
+
+.workspace .job-description summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.workspace .job-description summary::-webkit-details-marker {
+  display: none;
+}
+.workspace .job-description[open] summary svg {
+  transform: rotate(180deg);
+}
+.workspace textarea[rows='2'] {
+  min-height: 52px;
+}
+
+.workspace .portal-tools { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.workspace .theme-choice { display: flex; align-items: center; gap: .5rem; margin: 0; }
+.workspace .portal-tools select, .workspace .theme-choice select { width: auto; }
+.workspace .signin, .workspace .listrow, .workspace .pagehead { overflow-wrap: anywhere; }
+.workspace h1 { font-size: 2rem; }
+.workspace h2 { font-size: 1.375rem; }
+.workspace .loginpanel .theme-choice { margin-top: 1.5rem; }
+.workspace .records, .workspace .facts { font-variant-numeric: tabular-nums; }
+.workspace ::selection { color: var(--ink); background: var(--selected); }
+.workspace input, .workspace textarea { caret-color: var(--link); }
+.workspace .panel { box-shadow: none; }
+@media (max-width: 767px) {
+  .workspace .pagehead { align-items: flex-start; flex-direction: column; margin-bottom: 1.5rem; }
+  .workspace .portal-tools { gap: .5rem; }
+}
+
+.workspace .panel, .workspace .pagehead, .workspace .records td, .workspace .stack { overflow-wrap: anywhere; }
+.workspace .actions, .workspace .toolbar { flex-wrap: wrap; }
+
+.workspace input::placeholder, .workspace textarea::placeholder { color: var(--muted); opacity: 1; }
+.workspace .portal-tools { max-width: 100%; }
+.workspace .account { min-width: 0; overflow-wrap: anywhere; }
+.workspace .chart > div, .workspace .pager { font-variant-numeric: tabular-nums; }
+.workspace .subheading { margin-top: 1.5rem; }

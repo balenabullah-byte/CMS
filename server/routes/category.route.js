@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import controller from '../controller/category.controller.js';
+import schemas from '../validation/category.validation.js';
+import validate from '../middleware/validate.middleware.js';
+import authenticate from '../middleware/auth.middleware.js';
+import allow from '../middleware/role.middleware.js';
+const router = Router();
+router.get('/maintenance-categories', authenticate, allow('admin','coordinator','technician','campus_member'), validate(schemas.list), controller.list);
+router.get('/maintenance-categories/:id', authenticate, allow('admin','coordinator','technician','campus_member'), validate(schemas.detail), controller.detail);
+router.post('/maintenance-categories', authenticate, allow('admin'), validate(schemas.create), controller.create);
+router.patch('/maintenance-categories/:id', authenticate, allow('admin'), validate(schemas.update), controller.update);
+export default router;

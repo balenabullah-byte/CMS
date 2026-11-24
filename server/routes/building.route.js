@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import controller from '../controller/building.controller.js';
+import schemas from '../validation/building.validation.js';
+import validate from '../middleware/validate.middleware.js';
+import authenticate from '../middleware/auth.middleware.js';
+import allow from '../middleware/role.middleware.js';
+const router = Router();
+router.get('/buildings', authenticate, allow('admin','coordinator','technician','campus_member'), validate(schemas.list), controller.list);
+router.get('/buildings/:id', authenticate, allow('admin','coordinator','technician','campus_member'), validate(schemas.detail), controller.detail);
+router.post('/buildings', authenticate, allow('admin'), validate(schemas.create), controller.create);
+router.patch('/buildings/:id', authenticate, allow('admin'), validate(schemas.update), controller.update);
+export default router;

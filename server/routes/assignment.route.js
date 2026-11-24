@@ -1,0 +1,15 @@
+import { Router } from 'express';
+import controller from '../controller/assignment.controller.js';
+import schemas from '../validation/assignment.validation.js';
+import validate from '../middleware/validate.middleware.js';
+import authenticate from '../middleware/auth.middleware.js';
+import allow from '../middleware/role.middleware.js';
+const router = Router();
+router.post('/maintenance-requests/:id/assignments', authenticate, allow('coordinator'), validate(schemas.assign), controller.assign);
+router.post('/maintenance-requests/:id/reassign', authenticate, allow('coordinator'), validate(schemas.reassign), controller.reassign);
+router.get('/assignments', authenticate, allow('technician', 'coordinator'), validate(schemas.list), controller.list);
+router.get('/assignments/:id', authenticate, allow('technician', 'coordinator'), validate(schemas.detail), controller.detail);
+router.patch('/assignments/:id/start', authenticate, allow('technician'), validate(schemas.start), controller.start);
+router.patch('/assignments/:id/progress', authenticate, allow('technician'), validate(schemas.progress), controller.progress);
+router.patch('/assignments/:id/complete', authenticate, allow('technician'), validate(schemas.complete), controller.complete);
+export default router;

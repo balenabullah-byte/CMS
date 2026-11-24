@@ -1,0 +1,21 @@
+import knexLib from 'knex';
+import { fileURLToPath } from 'node:url';
+
+try {
+  process.loadEnvFile(fileURLToPath(new URL('./.env', import.meta.url)));
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error;
+}
+const knex = knexLib({
+  client: 'mysql2',
+  connection: {
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: Number(process.env.DB_PORT || 3306),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME || 'cms_maintenance',
+    supportBigNumbers: true,
+  },
+  pool: { min: 0, max: 10 },
+});
+export default knex;

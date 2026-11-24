@@ -1,0 +1,15 @@
+$kind: collection
+description: Set email and password and send POST /auth/login. Postman uses the session cookie for subsequent requests. Use an account with the role listed in each request and set ID variables to records in your test database.
+variables:
+  baseUrl: http://127.0.0.1:3000/api
+  email: demo.admin@example.test
+  password: TestAdmin@123456
+  newPassword: TestAdmin@123456
+  buildingId: ""
+  roomId: ""
+  categoryId: ""
+  userId: ""
+  roleId: ""
+  technicianId: ""
+  requestId: ""
+  assignmentId: ""

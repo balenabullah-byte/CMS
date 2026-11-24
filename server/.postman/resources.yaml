@@ -1,0 +1,9 @@
+# Use this workspace to collaborate
+workspace:
+  id: e58dd077-8507-4e5b-80f5-f506ea5d75da
+
+localResources:
+  collections:
+    - ../Campus maintenance
+    - postman/collections/Campus Postman Collection
+

@@ -1,0 +1,32 @@
+$kind: http-request
+name: 'PATCH /maintenance-requests/:id/priority'
+description: 'Access: coordinator. Success: 200, JSON with a data field. Errors use {"error":"message"}. Invalid input 400, missing session 401, insufficient role 403, missing or inaccessible record 404, conflict 409, rate limit 429 where applicable.'
+method: PATCH
+url: '{{baseUrl}}/maintenance-requests/{{requestId}}/priority'
+order: 9000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "priority": "high"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Status 200 OK', () => pm.response.to.have.status(200));
+      pm.test('Response time < 2000ms', () => pm.expect(pm.response.responseTime).to.be.below(2000));
+      pm.test('Content-Type is JSON', () => pm.response.to.have.header('Content-Type', /application\/json/));
+      pm.test('Response has data field', () => pm.expect(pm.response.json()).to.have.property('data'));
+      pm.test('Request has id and priority', () => {
+        const data = pm.response.json().data;
+        pm.expect(data).to.be.an('object');
+        pm.expect(data).to.have.property('id');
+        pm.expect(data).to.have.property('priority');
+      });
+      pm.test('Priority is a valid value', () => {
+        pm.expect(pm.response.json().data.priority).to.be.oneOf(['low', 'medium', 'high', 'urgent']);
+      });
