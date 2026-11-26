@@ -1,10 +1,12 @@
+import { period } from './report-filters.js';
 import TableModule from './base.module.js';
 import knex from '../connection.js';
 class MaintenanceModule extends TableModule {
   constructor() { super('maintenance_requests'); }
   async lock(id, db) { return db(this.table).where({ id }).forUpdate().first(); }
-  async accessible(user, page, id) {
-    const query = knex(this.table);
+  async accessible(user, page, id, transaction) {
+    const query = (transaction || knex)(this.table);
+    if (transaction) query.forUpdate();
     if (!user.roles.includes('coordinator')) {
       query.where(function () {
         this.whereRaw('1 = 0');
@@ -30,8 +32,15 @@ class MaintenanceModule extends TableModule {
         if (reference) this.orWhere('id', reference[1]);
       });
     }
-    if (page.status === 'closed') query.orderBy('closed_at', 'desc');
-    return query.orderBy('id','desc').limit(page.limit).offset(page.offset);
+    for (const key of ['building_id','room_id','category_id','priority']) if(page[key]) query.where(key,page[key]);
+    period(query,'created_at',page);
+    const countQuery = page.totals ? query.clone().clearSelect().count({total:'*'}).first() : null;
+    if (page.sort) query.orderBy(page.sort,page.direction || 'desc');
+    else if (page.status === 'closed') query.orderBy('closed_at', 'desc');
+    const rows = query.orderBy('id','desc').limit(page.limit).offset(page.offset);
+    if (!countQuery) return rows;
+    const [records, count] = await Promise.all([rows,countQuery]);
+    return {rows:records,total:Number(count.total),limit:page.limit,offset:page.offset};
   }
   async statistics(reporter) {
     const query = knex(this.table);

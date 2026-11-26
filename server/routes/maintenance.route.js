@@ -15,6 +15,7 @@ router.patch('/maintenance-requests/:id/reject', authenticate, allow('coordinato
 router.patch('/maintenance-requests/:id/close', authenticate, allow('coordinator'), validate(schemas.close), controller.close);
 router.patch('/maintenance-requests/:id/reopen', authenticate, allow('coordinator'), validate(schemas.reopen), controller.reopen);
 router.patch('/maintenance-requests/:id/priority', authenticate, allow('coordinator'), validate(schemas.priority), controller.priority);
+router.get('/maintenance-requests/:id/attachments', authenticate, allow('campus_member','coordinator','technician'), validate(schemas.history), controller.attachments);
 router.get('/maintenance-requests/:id/history', authenticate, allow('campus_member', 'coordinator', 'technician'), validate(schemas.history), controller.history);
 router.get('/maintenance-requests/:id/comments', authenticate, allow('campus_member', 'coordinator', 'technician'), validate(schemas.comments), controller.comments);
 router.post('/maintenance-requests/:id/comments', authenticate, allow('campus_member', 'coordinator', 'technician'), validate(schemas.comment), controller.comment);

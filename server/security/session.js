@@ -2,7 +2,13 @@ import { randomBytes, createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 const lifetime = 8 * 3600 * 1000;
-const options = { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', path: '/api' };
+const baseOptions = { httpOnly: true, sameSite: 'strict', path: '/api' };
+function cookieOptions(req) {
+  const secure = process.env.COOKIE_SECURE != null
+    ? process.env.COOKIE_SECURE === 'true'
+    : process.env.NODE_ENV === 'production' && Boolean(req?.secure || req?.headers?.['x-forwarded-proto'] === 'https');
+  return { ...baseOptions, secure };
+}
 function filename(token) {
   return join(process.env.SESSION_DIR, createHash('sha256').update(token).digest('hex'));
 }
@@ -12,7 +18,7 @@ function cookie(req) {
 export async function logout(req, res) {
   const token = cookie(req);
   if (token) await rm(filename(token), { force: true });
-  res.clearCookie('campus_session', options);
+  res.clearCookie('campus_session', cookieOptions(req));
 }
 export async function login(req, res, user) {
   await logout(req, res);
@@ -20,7 +26,7 @@ export async function login(req, res, user) {
   await mkdir(process.env.SESSION_DIR, { recursive: true, mode: 0o700 });
   await writeFile(filename(token), JSON.stringify({ id: user.id, expires: Date.now() + lifetime,
     version: createHash('sha256').update(user.password_hash).digest('hex') }), { mode: 0o600, flag: 'wx' });
-  res.cookie('campus_session', token, { ...options, maxAge: lifetime });
+  res.cookie('campus_session', token, { ...cookieOptions(req), maxAge: lifetime });
 }
 export async function session(req) {
   const token = cookie(req);

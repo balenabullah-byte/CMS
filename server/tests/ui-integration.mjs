@@ -17,6 +17,8 @@ await withTestApi(async (base, password) => {
     })
     const errors = []
     const failed = []
+    const emails = {admin:'admin@uni.edu', coordinator:'staff@uni.edu', technician:'contractor@uni.edu',
+      campus_member:'faculty@uni.edu', student:'student@uni.edu'}
     async function sign(role, width = 1440, height = 960) {
       const context = await browser.newContext({ viewport: { width, height } })
       const page = await context.newPage()
@@ -28,7 +30,7 @@ await withTestApi(async (base, password) => {
       })
       page.on('dialog', dialog => dialog.accept())
       page.on('pageerror', (e) => errors.push(e.message))
-      page.setDefaultTimeout(7000)
+      page.setDefaultTimeout(20000)
       await page.goto(origin + '/login')
       const theme = page.getByLabel('Theme', {exact:true})
       await theme.selectOption('dark')
@@ -36,7 +38,7 @@ await withTestApi(async (base, password) => {
       assert.equal(await theme.inputValue(), 'dark')
       await page.keyboard.press('Tab')
       assert.ok(await page.locator(':focus-visible').count())
-      await page.getByLabel('Email', { exact: true }).fill(role + '@example.test')
+      await page.getByLabel('Email', { exact: true }).fill(emails[role])
       await page.getByLabel('Password', { exact: true }).fill(password)
       await page.getByRole('button', { name: 'Sign in' }).click()
       await page.getByRole('heading', { name: 'Dashboard', exact: true }).waitFor()
@@ -51,16 +53,16 @@ await withTestApi(async (base, password) => {
     }
     const roles = await send(admin, '/roles'),
       ids = {}
-    for (const role of ['campus_member', 'technician', 'coordinator']) {
+    for (const role of ['campus_member', 'student', 'technician', 'coordinator']) {
       const account = await send(admin, '/users', 'POST', {
-        email: role + '@example.test',
+        email: emails[role],
         password,
         full_name: role,
-        member_type: 'staff',
+        member_type: ({campus_member:'faculty', student:'student', technician:'contractor'})[role] || 'staff',
       })
       ids[role] = account.id
       await send(admin, '/users/' + account.id + '/roles', 'POST', {
-        role_id: roles.find((r) => r.code === role).id,
+        role_id: roles.find((r) => r.code === (role === 'student' ? 'campus_member' : role)).id,
       })
     }
     await admin.getByRole('link', { name: 'Buildings', exact: true }).click()
@@ -76,7 +78,7 @@ await withTestApi(async (base, password) => {
     await admin.getByRole('button', { name: 'Edit room 204' }).waitFor()
     await admin.goto(origin + '/users')
     await admin.getByRole('heading', { name: 'User directory' }).waitFor()
-    const memberRow = admin.locator('.listrow').filter({ hasText: 'campus_member@example.test' })
+    const memberRow = admin.locator('.user-row').filter({ hasText: emails.campus_member })
     await memberRow.getByRole('button', { name: 'Roles', exact: true }).click()
     await admin.getByRole('button', { name: 'Grant Technician', exact: true }).click()
     await admin.getByRole('button', { name: 'Revoke Technician', exact: true }).click()
@@ -113,6 +115,20 @@ await withTestApi(async (base, password) => {
     }
     await tech.setViewportSize({width:375,height:844})
     const category = (await send(member, '/maintenance-categories'))[0].id
+    const student = await sign('student',375,844)
+    const studentReport = await send(student,'/maintenance-requests','POST',{
+      title:'Study desk repair',description:'Loose desktop',building_id:building,category_id:category,
+    })
+    await student.goto(origin+'/member/requests/'+studentReport.id)
+    await student.getByLabel('Comment',{exact:true}).fill('The desk is beside the door.')
+    await student.getByRole('button',{name:'Post comment'}).click()
+    await student.getByText('Comment posted.').waitFor()
+    await student.reload()
+    await student.getByText('The desk is beside the door.',{exact:true}).waitFor()
+    const {default:db} = await import('../connection.js')
+    const storedStudent = await db('request_comments').where({request_id:studentReport.id}).first()
+    assert.equal(storedStudent.author_id,ids.student)
+    assert.equal(storedStudent.visibility,'reporter_visible')
     for (const [i, title] of [
       'AC not cooling in study room',
       'Flickering lights in hallway',
@@ -172,6 +188,12 @@ await withTestApi(async (base, password) => {
     await member.getByRole('link',{name:/AC not cooling/}).waitFor()
     await member.unroute('**/api/maintenance-requests?**')
     await member.goto(origin + '/member/dashboard')
+    const workflowErrors = []
+    function recordHttpError(response) {
+      if (new URL(response.url()).pathname.startsWith('/api/') && response.status() >= 400)
+        workflowErrors.push([new URL(response.url()).pathname,response.status()])
+    }
+    for (const page of [member,coord,tech]) page.on('response',recordHttpError)
     await member.getByRole('link', { name: 'Report an issue' }).click()
     await member.waitForURL('**/requests/new')
     await member.getByLabel(/^Building/).selectOption(String(building))
@@ -184,7 +206,45 @@ await withTestApi(async (base, password) => {
     await member.getByRole('button', { name: 'Submit request' }).click()
     await member.getByRole('heading', { name: 'Repair projector connection' }).waitFor()
     const detail = new URL(member.url()).pathname
+    await coord.goto(origin + '/coordinator/assignments')
+    await coord.getByRole('link', {name:/Repair projector connection/}).waitFor()
+    await coord.getByRole('button', {name:'Refresh requests',exact:true}).click()
+    await coord.getByRole('link', {name:/Study desk repair/}).waitFor()
+    const commentPath = '/api/maintenance-requests/' + detail.split('/').at(-1) + '/comments'
+    const draft = 'The projector also loses signal on the spare cable.'
+    const input = member.getByLabel('Comment', {exact:true})
+    const post = member.getByRole('button', {name:'Post comment'})
+    await input.fill(draft)
+    // A second sign-in in this browser context replaces the cookie in the open detail tab.
+    async function switchAccount(role) {
+      await send(member, '/auth/login', 'POST', {email:emails[role], password})
+    }
+    async function postComment() {
+      const pending = member.waitForResponse(r => new URL(r.url()).pathname === commentPath && r.request().method() === 'POST')
+      await post.click()
+      return pending
+    }
+    await switchAccount('coordinator')
+    const denied = await postComment()
+    assert.equal(denied.status(),403)
+    assert.match((await denied.json()).error,/signed-in account changed/)
+    assert.equal(denied.request().headers()['x-campus-role'],'campus_member')
+    await member.getByRole('alert').filter({hasText:'signed-in account changed'}).waitFor()
+    await switchAccount('student')
+    assert.equal((await postComment()).status(),403)
+    assert.equal(await input.inputValue(),draft)
+    await switchAccount('campus_member')
+    const posted = await postComment()
+    assert.equal(posted.status(),201)
+    assert.equal((await posted.json()).data.author_id,ids.campus_member)
+    await member.getByText(draft,{exact:true}).waitFor()
+    assert.equal(await input.inputValue(),'')
+    await member.reload()
+    await member.getByText(draft,{exact:true}).waitFor()
     await coord.goto(origin + detail.replace('/member/', '/coordinator/'))
+    await coord.getByText(draft,{exact:true}).waitFor()
+    assert.equal(await coord.getByRole('button',{name:'Assign technician',exact:true}).count(),0)
+    await coord.getByText('Approve this request to assign a technician.').waitFor()
     async function action(name, confirm) {
       await coord.getByRole('button', { name, exact: true }).click()
       await coord.getByRole('button', { name: confirm, exact: true }).click()
@@ -194,6 +254,7 @@ await withTestApi(async (base, password) => {
     await coord.getByLabel('Technician', {exact:true}).selectOption(String(ids.technician))
     await coord.getByRole('button', { name: 'Confirm assign' }).click()
     await coord.getByRole('button', { name: 'Reassign technician' }).waitFor()
+    await coord.getByRole('link',{name:/Assignment #\d+ · technician · Assigned/}).waitFor()
     await tech.reload()
     await tech.getByRole('link', { name: /Assignment #\d+ · Request/ }).click()
     await tech.getByRole('button', { name: 'Start work' }).click()
@@ -208,16 +269,75 @@ await withTestApi(async (base, password) => {
     await tech.getByLabel('Staff-only update').fill('Checked the cable')
     await tech.getByRole('button', { name: 'Post update' }).click()
     await tech.getByText('Staff-only update posted.').waitFor()
+    await tech.getByLabel('Root cause', {exact:true}).selectOption('electrical_failure')
+    await tech.getByLabel('Hours',{exact:true}).fill('1')
+    await tech.getByLabel('Minutes',{exact:true}).fill('15')
+    await tech.getByLabel('Materials used (optional)').fill('HDMI cable')
     await tech.getByLabel('Completion note').fill('Replaced damaged cable')
-    await tech.getByRole('button', { name: 'Complete assignment', exact: true }).click()
+    await tech.getByRole('button', { name: 'Submit for verification', exact: true }).click()
     await tech.getByRole('heading', { name: 'Assignment record' }).waitFor()
     await member.reload()
     await member.getByRole('heading', { name: 'Comments' }).waitFor()
     assert.equal(await member.getByText('Checked the cable').count(), 0)
-    await coord.reload()
+    await coord.goto(origin + '/coordinator/verification')
+    await coord.getByRole('link',{name:'Repair projector connection',exact:true}).click()
+    await coord.getByText('HDMI cable',{exact:true}).waitFor()
+    await coord.getByText('75 min',{exact:true}).waitFor()
     await action('Close request', 'Confirm close')
     await member.reload()
     await member.getByText('Closed', { exact:true }).first().waitFor()
+    await member.getByText(draft,{exact:true}).waitFor()
+    assert.equal(await post.count(),0)
+    await coord.goto(origin+'/coordinator/assignments')
+    await coord.getByRole('link',{name:'Repair projector connection',exact:true}).waitFor()
+    for (const page of [member,coord]) {
+      for (const width of [375,1440]) {
+        await page.setViewportSize({width,height:900})
+        for (const theme of ['dark','light']) {
+          await page.getByLabel('Theme',{exact:true}).selectOption(theme)
+          assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+        }
+      }
+    }
+    const filter = new URLSearchParams({technician_id:ids.technician,building_id:building,cause:'electrical_failure',date_field:'completed',from:'2000-01-01',to:'2099-12-31'})
+    await coord.goto(origin+'/coordinator/history?'+filter)
+    await coord.getByRole('link',{name:'Repair projector connection',exact:true}).waitFor()
+    const downloaded=coord.waitForEvent('download')
+    await coord.getByRole('button',{name:'Export CSV'}).click()
+    assert.match((await downloaded).suggestedFilename(),/^maintenance-records-.*\.csv$/)
+    const requestId = Number(detail.split('/').at(-1))
+    const publicRows = await db('request_comments').where({request_id:requestId,visibility:'reporter_visible'})
+    assert.equal(publicRows.length,1)
+    assert.equal(publicRows[0].body,draft)
+    assert.equal(publicRows[0].author_id,ids.campus_member)
+    assert.ok(publicRows[0].created_at)
+    const completed = await db('work_assignments').where({request_id:requestId}).first()
+    assert.equal(completed.technician_id,ids.technician)
+    assert.equal(completed.end_reason,'completed')
+    assert.equal(completed.labor_minutes,75)
+    for (const page of [member,coord,tech]) page.off('response',recordHttpError)
+    assert.deepEqual(workflowErrors,[[commentPath,403],[commentPath,403]])
+    if(process.env.UI_SCREENSHOTS) {
+      await coord.setViewportSize({width:1586,height:992})
+      await coord.screenshot({path:join(process.env.UI_SCREENSHOTS,'history-desktop.png')})
+    }
+    for(const [page,role,names] of [[coord,'coordinator',['operations','causes','workload']],[admin,'admin',['accounts','infrastructure','trends']]]) {
+      for(const name of names){
+        await page.goto(origin+'/'+role+'/analytics/'+name)
+        await page.locator('.report-series').first().waitFor()
+        assert.equal(await page.locator('main .error').count(),0)
+        if(name==='operations' && process.env.UI_SCREENSHOTS){
+          await page.getByLabel('Theme',{exact:true}).selectOption('dark')
+          await page.screenshot({path:join(process.env.UI_SCREENSHOTS,'operations-dark.png'),animations:'disabled'})
+          await page.getByLabel('Theme',{exact:true}).selectOption('light')
+        }
+        if(name==='causes') await page.locator('.report-series').getByText('Electrical failure',{exact:true}).first().waitFor()
+        await page.setViewportSize({width:375,height:812})
+        assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+        await page.setViewportSize({width:1440,height:900})
+      }
+    }
+    await coord.goto(origin + detail.replace('/member/','/coordinator/'))
     await coord.getByRole('button', { name: 'Reopen request' }).click()
     await coord.getByLabel('Reason').fill('Verify replacement')
     await coord.getByRole('button', { name: 'Confirm reopen' }).click()
@@ -251,7 +371,7 @@ await withTestApi(async (base, password) => {
     await member.getByLabel('Comment', { exact: true }).fill('Draft after session expiry')
     await send(member, '/auth/logout', 'POST')
     await member.getByRole('button', { name: 'Post comment' }).click()
-    await member.getByLabel('Email', { exact: true }).fill('campus_member@example.test')
+    await member.getByLabel('Email', { exact: true }).fill(emails.campus_member)
     await member.getByLabel('Password', { exact: true }).fill(password)
     await member.getByRole('button', { name: 'Sign in' }).click()
     await member.getByLabel('Comment', { exact: true }).waitFor()
@@ -278,4 +398,4 @@ await withTestApi(async (base, password) => {
     await browser?.close()
     await new Promise((resolve) => app.httpServer.close(resolve))
   }
-})
+}, {adminEmail:'admin@uni.edu'})

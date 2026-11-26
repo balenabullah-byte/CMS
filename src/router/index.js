@@ -17,6 +17,12 @@ const pages = [
     route('/requests/:id(\\d+)', 'Request details', 'RequestDetail', readers),
     route('/assignments', 'Assignments', 'Assignments', ['coordinator', 'technician']),
     route('/assignments/:id(\\d+)', 'Assignment', 'AssignmentDetail', ['coordinator', 'technician']),
+    route('/history','Maintenance history','Assignments',['coordinator','technician']),
+    route('/verification','Verification queue','Assignments',['coordinator']),
+    route('/technicians','Technicians','Technicians',['coordinator']),
+    ...Object.entries({operations:'Maintenance operations',causes:'Root cause analysis',workload:'Technician workload',
+      accounts:'Account analytics',infrastructure:'Campus infrastructure',trends:'Maintenance trends'}).map(([key,title]) =>
+        route('/analytics/'+key,title,'Analytics',[['accounts','infrastructure','trends'].includes(key)?'admin':'coordinator'])),
     route('/users', 'Users and roles', 'Admin', ['admin']),
     route('/profile', 'Profile and settings', 'Profile'),
 ]
@@ -39,6 +45,7 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   document.title = String(to.name) + ' | Campus Resource Hub'
   const w = useWorkspace()
+  if (to.path === '/login' && !w.user) return
   try {
     await w.identify()
   } catch (error) {

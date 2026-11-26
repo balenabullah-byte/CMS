@@ -6,6 +6,7 @@ import {
   House,
   Wrench,
   ClipboardList,
+  ChartColumn, History, ListChecks, Settings2,
   Users,
   UserRound,
   PanelLeftClose,
@@ -19,16 +20,26 @@ const w = useWorkspace(),
   route = useRoute(),
   drawer = ref(null),
   main = ref(null)
-const links = computed(() =>
-  [
-    ['Dashboard', '/dashboard', House, !!w.portal],
-    ['Buildings', '/buildings', Building2, !!w.portal],
-    [w.has('campus_member') ? 'My reports' : 'Maintenance requests', '/requests', Wrench, w.canRead],
-    [w.has('technician') ? 'My jobs' : 'Assignments', '/assignments', ClipboardList, w.has('coordinator') || w.has('technician')],
-    ['Users and roles', '/users', Users, w.has('admin')],
-  ].filter((x) => x[3]),
-)
-const active = (path) => (path === '/' ? route.path === '/' : route.path.startsWith(path) || route.path.startsWith('/' + portals[w.portal] + path))
+const groups = computed(() => {
+  const main = [['Dashboard','/dashboard',House]]
+  const config = [], analytics = []
+  if(w.has('coordinator')) {
+    main.push(['Incoming reports','/requests',Wrench],['Work orders','/assignments',ClipboardList],['Verification queue','/verification',ListChecks])
+    config.push(['Maintenance history','/history',History],['Technicians','/technicians',Users])
+    analytics.push(['Maintenance operations','/analytics/operations'],['Root cause analysis','/analytics/causes'],['Technician workload','/analytics/workload'])
+  }
+  if(w.has('technician')) main.push(['My jobs','/assignments',ClipboardList],['Work history','/history',History])
+  if(w.has('campus_member')) main.push(['My reports','/requests',Wrench])
+  if(w.has('admin')) {
+    main.push(['Users and roles','/users',Users],['Roles and permissions','/users?section=Roles',ListChecks])
+    config.push(['Maintenance categories','/users?section=Categories',Settings2])
+    analytics.push(['Account analytics','/analytics/accounts'],['Campus infrastructure','/analytics/infrastructure'],['Maintenance trends','/analytics/trends'])
+  }
+  if(w.portal) config.push(['Buildings','/buildings',Building2])
+  return w.portal ? [['Workspace',main],['Management',config],['Analytics',analytics.map(([n,p])=>[n,p,ChartColumn])]].filter(([,items])=>items.length) : []
+})
+const links=computed(()=>groups.value.flatMap(([,items])=>items))
+const active = path => path.includes('?') ? route.fullPath===w.path(path) : route.path===w.path(path) && !(path==='/users' && route.query.section)
 watch(
   () => route.path,
   async () => {
@@ -46,9 +57,9 @@ watch(
         <Building2 />
         <b>Campus Resource Hub</b>
       </div>
-      <nav aria-label="Main navigation">
+      <nav aria-label="Main navigation"><div v-for="[group,items] in groups" :key="group"><div class="nav-group">{{ group }}</div>
         <RouterLink
-          v-for="[name, path, icon] in links"
+          v-for="[name, path, icon] in items"
           :key="path"
           :to="w.path(path)"
           :class="{ selected: active(path) }"
@@ -57,7 +68,7 @@ watch(
           <component :is="icon" />
           <span>{{ name }}</span>
         </RouterLink>
-      </nav>
+      </div></nav>
       <div class="railfoot">
         <button
           @click="w.compact(!w.collapsed)"

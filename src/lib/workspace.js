@@ -19,8 +19,9 @@ export const statuses = [
   'rejected',
 ]
 export const label = (value) => (value || '').replaceAll('_', ' ').replace(/^./, (c) => c.toUpperCase())
+let campusTimeZone
 export const date = (value) =>
-  value ? new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—'
+  value ? new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone:campusTimeZone }) : '—'
 export const useWorkspace = defineStore('workspace', () => {
   const user = ref(null),
     notice = ref(''),
@@ -32,7 +33,7 @@ export const useWorkspace = defineStore('workspace', () => {
   function selectPortal(role) {
     if (portal.value !== role) {
       portal.value = role
-      setPortalRole(role)
+      setPortalRole(role, user.value?.id)
       catalogs.value = null
       pending = null
       generation++
@@ -55,6 +56,7 @@ export const useWorkspace = defineStore('workspace', () => {
     const account = await api('/me')
     if (user.value && user.value.id !== account.id) clear()
     if (draft.value && draft.value.user !== account.id) draft.value = null
+    campusTimeZone = account.campus_time_zone
     user.value = account
   }
   async function catalog(force = false) {
@@ -102,16 +104,16 @@ export const useWorkspace = defineStore('workspace', () => {
   }
 })
 // Abort superseded reads and keep older responses out of the current view.
-export function usePage(loader, key = () => true) {
+export function usePage(loader, key = () => true, { refetchOnFocus = false } = {}) {
   const data = ref(null),
     loading = ref(false),
     error = ref('')
   let current
-  async function refresh() {
+  async function refresh(background = false) {
     current?.abort()
     const controller = new AbortController()
     current = controller
-    loading.value = true
+    if (!background || data.value === null) loading.value = true
     error.value = ''
     try {
       const next = await loader(controller.signal)
@@ -129,12 +131,25 @@ export function usePage(loader, key = () => true) {
     key,
     () => {
       data.value = null
-      refresh()
+      refresh(false)
     },
     { immediate: true },
   )
-  onScopeDispose(() => current?.abort())
-  return { data, loading, error, refresh }
+  const onFocus = () => {
+    if (!document.hidden && data.value !== null) refresh(true)
+  }
+  if (refetchOnFocus) {
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', onFocus)
+  }
+  onScopeDispose(() => {
+    if (refetchOnFocus) {
+      window.removeEventListener('focus', onFocus)
+      document.removeEventListener('visibilitychange', onFocus)
+    }
+    current?.abort()
+  })
+  return { data, loading, error, refresh: () => refresh(false) }
 }
 export function useAction() {
   const busy = ref(false),

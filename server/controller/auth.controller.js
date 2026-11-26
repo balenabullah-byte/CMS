@@ -29,7 +29,7 @@ class AuthController {
   async me(req, res, next) {
     try {
       const user = req.user;
-      res.status(200).json({ data: user });
+      res.status(200).json({ data: { ...user, campus_time_zone: process.env.CAMPUS_TIME_ZONE || Intl.DateTimeFormat().resolvedOptions().timeZone } });
     } catch (error) {
       next(error);
     }

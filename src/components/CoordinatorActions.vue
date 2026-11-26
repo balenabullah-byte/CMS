@@ -79,6 +79,7 @@ function chooseAction(a) {
 <template>
   <section class="panel">
     <h2>Manage request</h2>
+    <p v-if="request.status === 'submitted'">Approve this request to assign a technician.</p>
     <div class="actions">
       <button
         v-for="(a, i) in allowed"

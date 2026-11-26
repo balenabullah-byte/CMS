@@ -9,6 +9,9 @@ export default async function authenticate(req, res, next) {
   const account = await users.credentials({ id: data.id });
   if (!account?.is_active || createHash('sha256').update(account.password_hash).digest('hex') !== data.version) fail(401, 'Login required');
   delete account.password_hash;
+  const expectedAccount = req.get('X-Campus-Account');
+  if (expectedAccount && expectedAccount !== String(account.id))
+    fail(403, 'The signed-in account changed. Sign back in to the original account in another tab, then retry.');
   const roles = await membership.codes(account.id);
   const portal = req.get('X-Campus-Role');
   if (portal && !roles.includes(portal)) fail(403, 'Portal access denied');

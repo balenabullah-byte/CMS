@@ -1,5 +1,9 @@
 ﻿let portalRole
-export function setPortalRole(role) { portalRole = role }
+let portalAccount
+export function setPortalRole(role, accountId) {
+  portalRole = role
+  portalAccount = accountId
+}
 
 export class ApiError extends Error {
   constructor(status, message) {
@@ -16,7 +20,9 @@ export async function api(path, { method = 'GET', body, signal } = {}) {
       credentials: 'same-origin',
       headers: {
         ...(body && { 'Content-Type': 'application/json' }),
-        ...(portalRole && !['/me','/auth/login','/auth/logout'].includes(path) && { 'X-Campus-Role': portalRole }),
+        ...(portalRole && !['/me','/auth/login','/auth/logout'].includes(path) && {
+          'X-Campus-Role': portalRole, 'X-Campus-Account': String(portalAccount),
+        }),
       },
       body: body && JSON.stringify(body),
     })

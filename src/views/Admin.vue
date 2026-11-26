@@ -1,35 +1,29 @@
 <script setup>
-import { useRoute } from 'vue-router'
-import { computed, ref, watch } from 'vue'
+import FilterToolbar from '../components/FilterToolbar.vue'
+import ReportPager from '../components/ReportPager.vue'
+import { useReportQuery } from '../lib/reporting'
+import { useRoute, useRouter } from 'vue-router'
+import { ref, watch } from 'vue'
 import { api, all } from '../lib/api'
 import { useWorkspace, usePage, useAction, label } from '../lib/workspace'
 import LoadState from '../components/LoadState.vue'
 import RecordEditor from '../components/RecordEditor.vue'
-const route = useRoute()
+const route = useRoute(), router=useRouter(), {page,go,filters}=useReportQuery()
 const w = useWorkspace(),
-  tab = ref('Users'),
+  tab = ref(['Roles','Categories','Technician skills'].includes(route.query.section) ? route.query.section : 'Users'),
   edit = ref(null),
   selected = ref(null),
   roles = ref([]),
-  search = ref(''),
-  memberType = ref(''), roleFilter = ref(''), statusFilter = ref(''), page = ref(1),
   technician = ref(''),
   category = ref('')
 const { data, loading, error, refresh } = usePage(async (signal) => {
-  const [users, roles, skills, c] = await Promise.all([
-    all('/users', signal),
-    all('/roles', signal),
-    all('/technician-skills', signal),
-    w.catalog(),
+  const {section,create,...criteria}=filters.value
+  const [directory, roles, skills, c, overview] = await Promise.all([
+    api('/user-directory?'+new URLSearchParams({...criteria,limit:20,offset:(page.value-1)*20}),{signal}),
+    all('/roles', signal), all('/technician-skills', signal), w.catalog(), api('/analytics/accounts',{signal})
   ])
-  return { users, roles, skills, c }
-})
-const matches = computed(() => (data.value?.users || []).filter(u =>
-  [u.full_name,u.email,u.campus_id].join(' ').toLowerCase().includes(search.value.toLowerCase())
-  && (!memberType.value || memberType.value === u.member_type)
-  && (!roleFilter.value || u.roles.includes(roleFilter.value))
-  && (!statusFilter.value || Boolean(u.is_active) === (statusFilter.value === 'active'))))
-watch([search, memberType, roleFilter, statusFilter], () => { page.value = 1 })
+  return { directory, roles, skills, c, counts:Object.fromEntries(overview.series[1].rows.map(r=>[r.label,r.value])) }
+},()=>route.fullPath)
 const { run, busy, error: failure } = useAction()
 const userFields = [
   { key: 'full_name', label: 'Full name', required: true, max: 150 },
@@ -105,6 +99,7 @@ async function saved(record) {
   await refresh()
   if (newAccount) { await membership(record); w.notice = 'Account created. Assign a portal role below.' }
 }
+watch(()=>route.query.section,t=>selectTab(['Roles','Categories','Technician skills'].includes(t)?t:'Users'))
 function selectTab(t) {
   tab.value = t
   edit.value = null
@@ -139,28 +134,13 @@ function selectTab(t) {
           <h2>User directory</h2>
           <button class="primary" @click="userEditor(null)">New user</button>
         </div>
-        <label>
-          Search users
-          <input type="search" v-model="search" />
-        </label>
-        <div class="toolbar">
-          <label>Member type<select v-model="memberType"><option value="">All types</option><option v-for="t in userFields.find(f => f.key === 'member_type').options" :value="t">{{ label(t) }}</option></select></label>
-          <label>Role<select v-model="roleFilter"><option value="">All roles</option><option v-for="r in data.roles" :value="r.code">{{ label(r.code) }}</option></select></label>
-          <label>Account status<select v-model="statusFilter"><option value="">All accounts</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
-        </div>
-        <p v-if="!matches.length" class="empty">No accounts match these filters.</p>
-        <div class="listrow" v-for="u in matches.slice((page-1)*20,page*20)" :key="u.id">
-          <div>
-            <b>{{ u.full_name }}</b>
-            <small>{{ u.email }} · {{ u.is_active ? 'Active' : 'Inactive' }}</small>
-          </div>
-          <div class="actions">
-            <button class="textbtn" @click="userEditor(u)">Edit</button>
-            <button class="secondary" :disabled="busy" @click="run(() => membership(u))">Roles</button>
-          </div>
-        </div>
+        <FilterToolbar :fields="['search','member_type','role','active']" date-label="Account creation"/>
+        <div class="table-scroll"><table class="records" v-if="data.directory.rows.length"><thead><tr><th>Name</th><th>Email</th><th>Member type</th><th>Roles</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody><tr class="user-row" v-for="u in data.directory.rows" :key="u.id"><td>{{u.full_name}}</td><td>{{u.email}}</td><td>{{label(u.member_type)}}</td><td>{{u.roles.map(label).join(', ')}}</td><td>{{u.is_active?'Active':'Inactive'}}</td>
+            <td><div class="actions"><button class="textbtn" @click="userEditor(u)">Edit</button><button class="secondary" :disabled="busy" @click="run(()=>membership(u))">Roles</button></div></td>
+          </tr></tbody></table></div><p v-if="!data.directory.rows.length" class="empty">No matching accounts.</p>
+        <ReportPager :total="data.directory.total" :page @go="go"/>
       </section>
-      <div class="pager" v-if="tab === 'Users' && matches.length > 20"><button :disabled="page === 1" @click="page--">Previous</button>Page {{ page }}<button :disabled="page*20 >= matches.length" @click="page++">Next</button></div>
       <section v-if="selected" class="panel">
         <h2>{{ selected.full_name }} · Role memberships</h2>
         <div v-for="r in data.roles" class="listrow">
@@ -175,7 +155,7 @@ function selectTab(t) {
         <div v-for="r in data.roles" class="listrow">
           <div>
             <b>{{ label(r.code) }}</b>
-            <p>{{ r.description }}</p><button class="textbtn" @click="selectTab('Users'); roleFilter = r.code">{{ data.users.filter(u => u.roles.includes(r.code)).length }} accounts</button>
+            <p>{{ r.description }}</p><button class="textbtn" @click="selectTab('Users'); router.push({query:{role:r.code}})">{{ data.counts[r.code] || 0 }} accounts</button>
           </div>
           <button
             class="secondary"

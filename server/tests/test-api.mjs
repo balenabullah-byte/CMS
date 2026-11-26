@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { once } from 'node:events';
 import { hashPassword } from '../security/password.js';
 
-export async function withTestApi(run) {
+export async function withTestApi(run, { beforeMigration, adminEmail = 'admin@example.test' } = {}) {
   const port = Number(process.env.TEST_DB_PORT);
   if (!Number.isInteger(port) || port <= 0 || port > 65535 || !process.env.TEST_DB_USER) {
     throw new Error('Set TEST_DB_PORT and TEST_DB_USER for a local MariaDB test instance.');
@@ -21,7 +21,8 @@ export async function withTestApi(run) {
     await connection.query('CREATE DATABASE ?? CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci', [database]);
     created = true;
     await connection.changeUser({ database });
-    const schema = await readFile(new URL('../schema.sql', import.meta.url), 'utf8');
+    let schema = await readFile(new URL('../schema.sql', import.meta.url), 'utf8');
+    if (beforeMigration) schema = schema.replace(/^    (root_cause|root_cause_details|materials_used|labor_minutes) [^\n]+\n/gm,'');
     let delimiter = ';', statement = '';
     for (const line of schema.split(/\r?\n/)) {
       if (line.startsWith('DELIMITER ')) { delimiter = line.slice(10); continue; }
@@ -32,9 +33,14 @@ export async function withTestApi(run) {
       }
     }
     if (statement.trim()) throw new Error('Unterminated schema statement');
+    if (beforeMigration) {
+      await beforeMigration(connection);
+      const ddl=await readFile(new URL('../migrations/002_1_assignment_completion.sql', import.meta.url),'utf8');
+      await connection.query(ddl);
+    }
     const [{ insertId }] = await connection.execute(
       'INSERT INTO users (email, full_name, member_type, password_hash) VALUES (?, ?, ?, ?)',
-      ['admin@example.test', 'Test Admin', 'staff', await hashPassword(password)]);
+      [adminEmail, 'Test Admin', 'staff', await hashPassword(password)]);
     await connection.execute("INSERT INTO user_roles (user_id, role_id) SELECT ?, id FROM roles WHERE code='admin'", [insertId]);
     dir = await mkdtemp(join(tmpdir(), 'campus-api-'));
     Object.assign(process.env, { DB_HOST: options.host, DB_PORT: String(port), DB_NAME: database,

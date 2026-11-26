@@ -70,6 +70,13 @@ class AssignmentController {
     }
   }
 
+  async summary(req,res,next) {
+    try { res.json({data:await model.summary(req.user.id,req.input.query)}); } catch(error) { next(error); }
+  }
+  async search(req,res,next) {
+    try { res.json({data:await model.search(req.user,req.input.query)}); } catch(error) { next(error); }
+  }
+
   async detail(req, res, next) {
     try {
       res.json({ data: found(await model.jobs(req.user, { id: req.input.params.id })) });
@@ -114,7 +121,9 @@ class AssignmentController {
       const data = await knex.transaction(async db => {
         const { request, job } = await lockOwnedAssignment(params.id, user.id, db);
         state(request, ['in_progress']);
-        await model.update(job.id, { completed_at: new Date(), ended_at: new Date(), ended_by_id: user.id, end_reason: 'completed', completion_note: body.completion_note }, db);
+        const completed = new Date();
+        await model.update(job.id, { ...body, completed_at: completed, ended_at: completed,
+          ended_by_id: user.id, end_reason: 'completed' }, db);
         return requests.update(request.id, { status: 'completed', status_changed_by_id: user.id, status_note: null }, db);
       });
       res.status(200).json({ data });

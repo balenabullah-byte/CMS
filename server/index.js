@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.route.js';
 import skillRoutes from './routes/skill.route.js';
 import maintenanceRoutes from './routes/maintenance.route.js';
 import assignmentRoutes from './routes/assignment.route.js';
+import reportingRoutes from './routes/reporting.route.js';
 export const app = express();
 app.disable('x-powered-by');
 app.use('/api', limit(1000, 'api'), (req, res, next) => {
@@ -20,7 +21,7 @@ app.use('/api', limit(1000, 'api'), (req, res, next) => {
   next();
 }, express.json({ limit: '64kb' }));
 app.get('/api/health', (req, res) => res.json({ data: { status: 'ok' } }));
-app.use('/api', buildingRoutes, roomRoutes, categoryRoutes, userRoutes, roleRoutes, authRoutes, skillRoutes, maintenanceRoutes, assignmentRoutes);
+app.use('/api', reportingRoutes, buildingRoutes, roomRoutes, categoryRoutes, userRoutes, roleRoutes, authRoutes, skillRoutes, maintenanceRoutes, assignmentRoutes);
 app.use((req, res) => res.status(404).json({ error: 'Endpoint not found' }));
 app.use(errorHandler);
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

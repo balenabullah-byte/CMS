@@ -728,3 +728,77 @@
 .workspace .account { min-width: 0; overflow-wrap: anywhere; }
 .workspace .chart > div, .workspace .pager { font-variant-numeric: tabular-nums; }
 .workspace .subheading { margin-top: 1.5rem; }
+
+.workspace { --space:12px; --radius:7px; font-size:14px; }
+.workspace.layout { --rail:224px; }
+.workspace.layout.compact { --rail:64px; }
+.workspace main {padding:0 22px 28px}
+.workspace .pagehead {min-height:56px;margin:0 0 16px;padding:6px 0;border-bottom:1px solid var(--edge)}
+.workspace h1 {font-size:26px}
+.workspace h2 {font-size:18px}
+.workspace h3 {font-size:16px}
+.workspace .panel,.workspace .loginpanel {border-radius:var(--radius);padding:14px}
+.workspace .stack,.workspace .queues,.workspace .detailgrid {gap:12px}
+.workspace .split {margin-bottom:10px}
+.workspace .brandline {font-size:17px;min-height:56px;padding:10px 6px;gap:9px}
+.workspace aside {padding:0 10px}
+.workspace aside nav {padding-top:6px;overflow-y:auto}
+.workspace .nav-group {font-size:12px;color:var(--muted);margin:12px 10px 4px;font-weight:600}
+.workspace.compact .nav-group {display:none}
+.workspace nav a,.workspace .railfoot a,.workspace .railfoot button {min-height:34px;padding:7px 9px;gap:9px;border-radius:6px}
+.workspace .records td,.workspace .records th {padding:7px 10px}
+.workspace .records td {height:40px}
+.workspace small {font-size:12px}
+.workspace svg {width:18px;height:18px}
+.workspace label {gap:3px;font-size:13px}
+.workspace input,.workspace select,.workspace textarea {font-size:14px;padding:6px 9px;min-height:34px;border-radius:6px}
+.workspace .primary,.workspace .secondary {min-height:34px;padding:6px 12px;border-radius:6px;font-size:14px}
+.workspace .queue-row {min-height:52px;padding:6px}
+.workspace .listrow {padding:7px 0}
+.workspace .filterbar,.workspace .filter-tags {display:flex;align-items:end;gap:8px;flex-wrap:wrap}
+.workspace .filterbar {margin-bottom:12px}
+.workspace .filter-options summary,.workspace .filter-tags button {cursor:pointer;padding:6px 10px;border:1px solid var(--edge);border-radius:6px}
+.workspace .filter-options[open] {flex-basis:100%}
+.workspace .filter-options[open] summary {width:fit-content}
+.workspace .filter-grid,.workspace .form-pair {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:10px;margin-top:8px}
+.workspace .filter-tags {flex-basis:100%;font-size:12px}
+.workspace .table-scroll {max-width:100%;overflow-x:auto}
+.workspace .analytics-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr));gap:12px}
+.workspace .metric-strip {display:flex;flex-wrap:wrap;gap:16px 24px;padding:12px 0;border-block:1px solid var(--edge)}
+.workspace .metric-strip dt {color:var(--muted)}
+.workspace .metric-strip dd {font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.workspace .report-series ol {list-style:none;padding:0;max-height:360px;overflow:auto}
+.workspace .report-series li {display:grid;grid-template-columns:minmax(95px,1.4fr) minmax(60px,1fr) 3rem;align-items:center;gap:8px;margin-top:7px}
+.workspace .report-series li>i {display:block;background:var(--subtle);height:7px}
+.workspace .report-series li>i>i {display:block;background:var(--link);height:100%}
+.workspace .report-series strong {text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:767px){
+ .workspace main {padding:0 14px 22px}
+ .workspace .pagehead {padding:10px 0}
+ .workspace input,.workspace select,.workspace textarea {font-size:16px;min-height:44px}
+ .workspace .primary,.workspace .secondary,.workspace nav a,.workspace .filter-options summary {min-height:44px}
+ .workspace .filterbar>label {flex:1 1 140px}
+ .workspace .table-scroll .records {min-width:620px}
+}
+
+.workspace .trend svg {width:100%;height:160px}
+.workspace .trend-key {display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.workspace .trend-key span::before {content:'';display:inline-block;width:18px;border-top:3px solid var(--link);margin-right:5px;vertical-align:middle}
+.workspace .trend-key span:nth-child(2)::before {border-color:var(--good);border-top-style:dashed}
+.workspace .trend details,.workspace .report-series ol {overflow:auto;max-height:380px}
+
+.workspace .table-scroll .records td a {color:var(--link);text-decoration:underline;text-underline-offset:2px}
+.workspace .filterbar>.secondary {margin-inline-start:auto}
+.workspace .filterbar input[type=search] {width:100%}
+.workspace .filterbar>label:has(input[type=search]) {flex:1 1 240px;min-width:0}
+.workspace .pagehead {flex-wrap:wrap;overflow-wrap:normal}
+.workspace .pagehead h1 {flex:1 0 auto;max-width:100%;overflow-wrap:normal;word-break:normal}
+.workspace .portal-tools {flex-wrap:wrap;min-width:0}
+@media (min-width:768px) and (max-width:1023px) {
+  .workspace.layout,.workspace.layout.compact {--rail:64px}
+  .workspace aside nav a span,.workspace aside .railfoot span,.workspace aside .brandline b,
+  .workspace aside .nav-group {display:none}
+  .workspace aside nav a {justify-content:center}
+}
+.workspace .pager>span {margin-inline-end:auto}
+.workspace .table-scroll .records .actions {min-width:7rem}

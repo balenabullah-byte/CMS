@@ -29,6 +29,12 @@ class UserController {
     }
   }
 
+  async directory(req,res,next) {
+    try {res.json({data:await model.directory(req.input.query)});} catch(error){next(error)}
+  }
+  async reportingTechnicians(req,res,next) {
+    try {res.json({data:await model.reportingTechnicians(req.input.query)});} catch(error){next(error)}
+  }
   async technicians(req, res, next) {
     try { res.json({ data: await model.technicians(req.input.query) }); }
     catch (error) { next(error); }

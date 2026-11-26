@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { api, all } from '../lib/api'
 import { useWorkspace, usePage, useAction, date, label } from '../lib/workspace'
+import CompletionRecord from '../components/CompletionRecord.vue'
 import Badge from '../components/Badge.vue'
 import LoadState from '../components/LoadState.vue'
 import CoordinatorActions from '../components/CoordinatorActions.vue'
@@ -20,21 +21,24 @@ watch([message, visibility], () => {
       : null
 })
 const { data, loading, error, refresh } = usePage(async (signal) => {
-  const [r, history, comments, jobs, technicians] = await Promise.all([
+  const [r, history, comments, jobs, technicians, attachments] = await Promise.all([
     api(path, { signal }),
     all(path + '/history', signal),
     all(path + '/comments', signal),
     w.has('coordinator') || w.has('technician') ? all('/assignments?request_id=' + id, signal) : [],
     w.has('coordinator') ? all('/technicians', signal) : [],
+    all(path+'/attachments',signal),
     w.catalog(),
   ])
   const assignments = jobs.filter((j) => String(j.request_id) === id)
-  return { r, history, comments, assignments, job: assignments.find((j) => !j.ended_at), technicians }
+  return { r, history, comments, attachments, assignments, job: assignments.find((j) => !j.ended_at), technicians }
 })
 const staff = computed(
   () => w.has('coordinator') || (w.has('technician') && data.value?.job?.technician_id === w.user.id),
 )
 const { run, busy, error: failure } = useAction()
+const canComment = computed(() => data.value && !['closed','rejected'].includes(data.value.r.status) &&
+  (staff.value || (w.has('campus_member') && data.value.r.reporter_id === owner)))
 function post() {
   run(async () => {
     await api(path + '/comments', {
@@ -73,15 +77,18 @@ function post() {
             <p v-if="w.has('coordinator')">Reporter #{{ data.r.reporter_id }}</p>
             <p v-if="data.r.status_note">{{ data.r.status_note }}</p>
           </section>
+          <section v-if="data.attachments.length" class="panel"><h2>Evidence on file</h2>
+            <p v-for="a in data.attachments" :key="a.id">{{a.original_filename}} · {{Math.ceil(a.file_size_bytes/1024)}} KB · {{date(a.created_at)}}</p>
+          </section>
           <section class="panel">
             <h2>Comments</h2>
-            <article v-for="c in data.comments" class="entry">
+            <article v-for="c in data.comments" :key="c.id" class="entry">
               <b>{{ label(c.visibility) }}</b>
               <small>User #{{ c.author_id }} · {{ date(c.created_at) }}</small>
               <p class="prose">{{ c.body }}</p>
             </article>
             <p v-if="!data.comments.length" class="empty">No comments yet.</p>
-            <form @submit.prevent="post">
+            <form v-if="canComment" @submit.prevent="post">
               <label>
                 Comment
                 <textarea required maxlength="12000" v-model.trim="message" />
@@ -96,6 +103,7 @@ function post() {
               <p v-if="failure" class="error" role="alert">{{ failure }}</p>
               <button :disabled="busy" class="primary">Post comment</button>
             </form>
+            <p v-else class="empty">Comments are read-only.</p>
           </section>
           <section class="panel">
             <h2>History</h2>
@@ -119,9 +127,9 @@ function post() {
           />
           <section v-if="data.assignments.length" class="panel">
             <h2>Assignments</h2>
-            <p v-for="j in data.assignments.filter(x => x.completion_note)" :key="j.id">Completion note · {{ j.completion_note }}</p>
+            <details v-for="j in data.assignments.filter(x => x.ended_at)" :key="j.id" :open="j.id === data.assignments[0].id"><summary>Assignment #{{ j.id }} · {{ label(j.end_reason) }}</summary><CompletionRecord :job="j" /></details>
             <RouterLink class="listrow" v-for="j in data.assignments" :to="w.path('/assignments/' + j.id)">
-              Assignment #{{ j.id }} · {{ label(j.end_reason || 'active') }}
+              Assignment #{{ j.id }} · {{ j.technician_name }} · {{ label(j.end_reason || (j.started_at ? 'in_progress' : 'assigned')) }}
             </RouterLink>
           </section>
         </div>

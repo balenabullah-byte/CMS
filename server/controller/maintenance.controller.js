@@ -1,4 +1,5 @@
 import model from '../module/maintenance.module.js';
+import attachments from '../module/attachment.module.js';
 import comments from '../module/comment.module.js';
 import assignments from '../module/assignment.module.js';
 import history from '../module/history.module.js';
@@ -126,6 +127,15 @@ class MaintenanceController {
     }
   }
 
+  async attachments(req,res,next) {
+    try {
+      const {params,query}=req.input;
+      found(await model.accessible(req.user,{},params.id));
+      const staff=req.user.roles.includes('coordinator') || (req.user.roles.includes('technician') && await assignments.isAssigned(params.id,req.user.id));
+      res.json({data:await attachments.list(params.id,req.user.id,staff,query)});
+    } catch(error) {next(error)}
+  }
+
   async history(req, res, next) {
     try {
       const { params, query } = req.input;
@@ -153,10 +163,15 @@ class MaintenanceController {
     try {
       const { body, params, query } = req.input;
       const user = req.user;
-      found(await model.accessible(user, query, params.id));
-      const staff = user.roles.includes('coordinator') || (user.roles.includes('technician') && await assignments.isAssigned(params.id, user.id));
-      if (!staff && body.visibility === 'staff_only') fail(403, 'Staff access required');
-      res.status(201).json({ data: await comments.create({ ...body, request_id: params.id, author_id: user.id }) });
+      const data = await knex.transaction(async db => {
+        const request = found(await model.accessible(user, query, params.id, db));
+        if (['closed','rejected'].includes(request.status)) fail(409, 'Comments are read-only on ' + request.status + ' requests.');
+        if (body.visibility === 'staff_only' && !user.roles.includes('coordinator') &&
+            !(user.roles.includes('technician') && await assignments.isAssigned(params.id, user.id, db)))
+          fail(403, 'Staff access required');
+        return comments.create({ ...body, request_id: params.id, author_id: user.id }, db);
+      });
+      res.status(201).json({ data });
     } catch (error) {
       next(error);
     }
