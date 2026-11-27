@@ -1,4 +1,5 @@
-﻿<script setup>
+<script setup>
+import DeadlineTargets from "../components/DeadlineTargets.vue"
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { api, all } from '../lib/api'
@@ -26,7 +27,7 @@ const { data, loading, error, refresh } = usePage(async (signal) => {
     all(path + '/history', signal),
     all(path + '/comments', signal),
     w.has('coordinator') || w.has('technician') ? all('/assignments?request_id=' + id, signal) : [],
-    w.has('coordinator') ? all('/technicians', signal) : [],
+    w.has('coordinator') ? all(path+'/recommendations', signal) : [],
     all(path+'/attachments',signal),
     w.catalog(),
   ])
@@ -66,7 +67,8 @@ function post() {
       </div>
       <div class="detailgrid">
         <div class="stack">
-          <section class="panel">
+          <DeadlineTargets :request-id="id" />
+      <section class="panel">
             <h2>Request description</h2>
             <p class="prose">{{ data.r.description }}</p>
             <p v-if="data.r.location_note">{{ data.r.location_note }}</p>

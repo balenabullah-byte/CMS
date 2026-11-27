@@ -89,13 +89,25 @@ await withTestApi(async (base, password) => {
     await admin.getByRole('button', { name: 'Add skill' }).click()
     await admin.getByRole('button', { name: 'Remove skill' }).click()
     await admin.getByText('Technician skills updated.').waitFor()
+    await admin.goto(origin+'/admin/priority-policies')
+    await admin.getByRole('button',{name:'Configure normal'}).click()
+    for(const [field,value] of [['Response target','60'],['Resolution target','300'],['Response warning','15'],['Resolution warning','30']])
+      await admin.getByLabel(field,{exact:true}).fill(value)
+    await admin.getByLabel('Active policy').check()
+    await admin.getByRole('button',{name:'Save policy'}).click()
+    await admin.locator('article').filter({has:admin.getByRole('button',{name:'Configure normal'})})
+      .getByText(/^Active · Updated /).waitFor()
+    await admin.goto(origin+'/admin/audit-logs')
+    await admin.getByText(/Priority policy created/).first().waitFor()
+    await admin.getByText(/Technician skill added/).first().waitFor()
+    await send(admin,'/technician-skills','POST',{technician_id:ids.technician,category_id:(await send(admin,'/maintenance-categories'))[0].id})
     const member = await sign('campus_member'),
       coord = await sign('coordinator', 1487, 1058),
       tech = await sign('technician', 390, 844)
     for (const [page, portal] of [[admin,'admin'], [member,'member'], [coord,'coordinator'], [tech,'technician']]) {
       if (page === admin) await page.goto(origin + '/admin/dashboard')
       await page.waitForURL('**/' + portal + '/dashboard')
-      for (const width of [375, 768, 1024, 1440]) {
+      for (const width of [375, 768, 823, 1024, 1440]) {
         await page.setViewportSize({width, height: 900})
         for (const theme of ['dark','light']) {
           await page.getByLabel('Theme', {exact:true}).selectOption(theme)
@@ -241,7 +253,8 @@ await withTestApi(async (base, password) => {
     assert.equal(await input.inputValue(),'')
     await member.reload()
     await member.getByText(draft,{exact:true}).waitFor()
-    await coord.goto(origin + detail.replace('/member/', '/coordinator/'))
+    await coord.goto(origin+'/coordinator/notifications?event_type=submitted')
+    await coord.locator('article').filter({hasText:'REQ-'+detail.split('/').at(-1)}).getByRole('button',{name:'Open record'}).click()
     await coord.getByText(draft,{exact:true}).waitFor()
     assert.equal(await coord.getByRole('button',{name:'Assign technician',exact:true}).count(),0)
     await coord.getByText('Approve this request to assign a technician.').waitFor()
@@ -251,6 +264,7 @@ await withTestApi(async (base, password) => {
     }
     await action('Approve request', 'Confirm approve')
     await coord.getByRole('button', { name: 'Assign technician', exact: true }).click()
+    assert.match(await coord.getByLabel('Technician',{exact:true}).innerText(),/Matching skill/)
     await coord.getByLabel('Technician', {exact:true}).selectOption(String(ids.technician))
     await coord.getByRole('button', { name: 'Confirm assign' }).click()
     await coord.getByRole('button', { name: 'Reassign technician' }).waitFor()
@@ -299,6 +313,12 @@ await withTestApi(async (base, password) => {
         }
       }
     }
+    await member.goto(origin+'/member/notifications?event_type=closed')
+    await member.getByText('Closed',{exact:true}).waitFor()
+    await member.getByRole('button',{name:'Mark all as read'}).click()
+    await member.locator('article small').filter({hasText:/^Read /}).first().waitFor()
+    await member.reload()
+    await member.locator('article small').filter({hasText:/^Read /}).first().waitFor()
     const filter = new URLSearchParams({technician_id:ids.technician,building_id:building,cause:'electrical_failure',date_field:'completed',from:'2000-01-01',to:'2099-12-31'})
     await coord.goto(origin+'/coordinator/history?'+filter)
     await coord.getByRole('link',{name:'Repair projector connection',exact:true}).waitFor()

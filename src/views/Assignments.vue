@@ -23,7 +23,7 @@ const incoming = usePage(async signal => {
 }, () => route.fullPath, {refetchOnFocus:true})
 const defaults=computed(()=>({scope:verify.value?'verification':history.value?'ended':w.has('coordinator')?'all':'active',date_field:history.value?'ended':verify.value?'completed':'assigned'}))
 const query=(extra={})=>new URLSearchParams({...defaults.value,...Object.fromEntries(new URLSearchParams(parameters())),...extra,...(history.value?{scope:'ended'}:verify.value?{scope:'verification'}:{})}).toString()
-const fields=computed(()=>['search','date_field','building_id','room_id','category_id','priority','status',...(w.has('coordinator')?['technician_id']:[]),'cause','end_reason',...(!history.value&&!verify.value?['scope']:[]),'labor_min','labor_max','repair_min','repair_max','sort','direction'])
+const fields=computed(()=>['search','date_field','building_id','room_id','category_id','priority','status',...(w.has('coordinator')?['technician_id']:[]),'deadline_type','deadline_condition','cause','end_reason',...(!history.value&&!verify.value?['scope']:[]),'labor_min','labor_max','repair_min','repair_max','sort','direction'])
 const lookups=usePage(async signal=>{await w.catalog();return w.has('coordinator')?all('/work-technicians',signal):[]})
 const {data,loading,error,refresh}=usePage(signal=>api('/work-records?'+query({limit:20,offset:(page.value-1)*20}),{signal}),()=>route.fullPath)
 const action=useAction()
@@ -55,7 +55,7 @@ const action=useAction()
       <tbody><tr v-for="j in data.rows" :key="j.id">
         <td><RouterLink :to="w.path('/assignments/'+j.id)">ASG-{{ j.id }}</RouterLink><small>{{ label(j.end_reason || (j.started_at?'in_progress':'assigned')) }}</small></td>
         <td><RouterLink v-if="w.has('coordinator')" :to="w.path('/requests/'+j.request_id)">{{ j.title }}</RouterLink><strong v-else>{{ j.title }}</strong><small>REQ-{{ j.request_id }} · {{ j.building }} {{ j.room_code }} · {{ label(j.priority) }}</small></td>
-        <td>{{ j.technician_name }}</td><td>{{ causes[j.root_cause] || (j.end_reason==='completed'?'Not recorded':'—') }}</td>
+        <td>{{ j.technician_name }}<small v-if="j.response_state">Start: {{label(j.response_state)}} · Verification: {{label(j.resolution_state)}}</small></td><td>{{ causes[j.root_cause] || (j.end_reason==='completed'?'Not recorded':'—') }}</td>
         <td>{{ date(history||verify?j.ended_at:j.assigned_at) }}<small v-if="j.elapsed_minutes!=null">Elapsed {{j.elapsed_minutes}} min</small></td><td>{{ j.labor_minutes==null?'—':j.labor_minutes+' min' }}</td>
       </tr></tbody></table></div>
     <p class="empty" v-if="!data.rows.length">No assignments match this view.</p>

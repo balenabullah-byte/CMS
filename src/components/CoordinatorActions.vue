@@ -11,6 +11,13 @@ const op = ref(''),
   priority = ref(''),
   w = useWorkspace(),
   { run, busy, error } = useAction()
+const search=ref(''), matchingOnly=ref(false), workloadFirst=ref(false)
+const candidates=computed(()=>{
+  const rows=props.technicians.filter(t=>(op.value!=='reassign'||t.id!==props.job?.technician_id) &&
+    (!matchingOnly.value || t.matching) && t.full_name.toLowerCase().includes(search.value.toLowerCase()))
+  return workloadFirst.value ? rows.sort((a,b)=>a.workload-b.workload || a.id-b.id) : rows
+})
+watch(candidates,rows=>{if(!rows.some(t=>t.id===tech.value))tech.value=''})
 const actions = {
   submitted: ['approve', 'reject'],
   approved: ['assign'],
@@ -95,10 +102,17 @@ function chooseAction(a) {
       <p v-if="op === 'reopen' && job">
         Reopening ends assignment #{{ job.id }}. Enter a reason to continue.
       </p>
+      <div v-if="['assign','reassign'].includes(op)" class="stack">
+        <label>Find technician<input type="search" v-model="search"></label>
+        <label class="check"><input type="checkbox" v-model="matchingOnly">Matching specialization only</label>
+        <label class="check"><input type="checkbox" v-model="workloadFirst">Sort by active workload first</label>
+        <p v-if="!candidates.length">No eligible technicians match these filters.</p>
+        <p v-else-if="!candidates.some(t=>t.matching)">No matching specialist. Other eligible technicians are listed by workload.</p>
+      </div>
       <label v-if="['assign', 'reassign'].includes(op)">
         Technician
         <select aria-label="Technician" required v-model="tech"><option disabled value="">Select technician</option>
-          <option v-for="t in technicians.filter(t => op !== 'reassign' || t.id !== job?.technician_id)" :key="t.id" :value="t.id">{{ t.full_name }}</option>
+          <option v-for="t in candidates" :key="t.id" :value="t.id">{{ t.full_name }} · {{t.matching?'Matching skill':'Other eligible technician'}} · {{t.workload}} active ? {{t.skills||'No recorded skills'}}</option>
         </select>
       </label>
       <label v-if="['assign','reassign'].includes(op)">Instructions for technician (optional)

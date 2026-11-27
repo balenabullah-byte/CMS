@@ -13,6 +13,8 @@ import skillRoutes from './routes/skill.route.js';
 import maintenanceRoutes from './routes/maintenance.route.js';
 import assignmentRoutes from './routes/assignment.route.js';
 import reportingRoutes from './routes/reporting.route.js';
+import operations from './routes/operations.route.js';
+import deadlines from './module/deadline.module.js';
 export const app = express();
 app.disable('x-powered-by');
 app.use('/api', limit(1000, 'api'), (req, res, next) => {
@@ -21,12 +23,21 @@ app.use('/api', limit(1000, 'api'), (req, res, next) => {
   next();
 }, express.json({ limit: '64kb' }));
 app.get('/api/health', (req, res) => res.json({ data: { status: 'ok' } }));
-app.use('/api', reportingRoutes, buildingRoutes, roomRoutes, categoryRoutes, userRoutes, roleRoutes, authRoutes, skillRoutes, maintenanceRoutes, assignmentRoutes);
+app.use('/api', operations, reportingRoutes, buildingRoutes, roomRoutes, categoryRoutes, userRoutes, roleRoutes, authRoutes, skillRoutes, maintenanceRoutes, assignmentRoutes);
 app.use((req, res) => res.status(404).json({ error: 'Endpoint not found' }));
 app.use(errorHandler);
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (!process.env.DB_USER || !process.env.SESSION_DIR) throw new Error('Configure DB_USER and SESSION_DIR in server/.env');
   const port = Number(process.env.PORT || 3000);
   await knex.raw('SELECT 1');
-  app.listen(port, '127.0.0.1', () => console.log('Campus API listening on port', port));
+  let stopped=false, timer;
+  async function tick(){
+    try { await deadlines.process(); } catch(error){console.error('Deadline worker:',error.code || error.name);}
+    if(!stopped) timer=setTimeout(tick,Math.max(1000,Number(process.env.DEADLINE_INTERVAL_MS)||60000));
+  }
+  tick();
+  const server=app.listen(port, '127.0.0.1', () => console.log('Campus API listening on port', port));
+  const shutdown=()=>{stopped=true;clearTimeout(timer);server.close(()=>knex.destroy());};
+  process.once('SIGTERM',shutdown);
+  process.once('SIGINT',shutdown);
 }

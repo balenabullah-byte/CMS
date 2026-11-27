@@ -1,0 +1,18 @@
+import {Router} from 'express';
+import authenticate from '../middleware/auth.middleware.js';
+import allow from '../middleware/role.middleware.js';
+import validate from '../middleware/validate.middleware.js';
+import s from '../validation/operations.validation.js';
+import c from '../controller/operations.controller.js';
+const router=Router(),personal=allow('admin','coordinator','technician','campus_member'),admin=allow('admin');
+router.get('/notifications',authenticate,personal,validate(s.notices),c.notices);
+router.get('/notifications/count',authenticate,personal,validate({}),c.count);
+router.patch('/notifications/read',authenticate,personal,validate({}),c.read);
+router.patch('/notifications/:id/read',authenticate,personal,validate(s.id),c.read);
+router.get('/audit-logs',authenticate,admin,validate(s.audit),c.audit);
+router.get('/priority-policies',authenticate,admin,validate({}),c.policies);
+router.put('/priority-policies/:priority',authenticate,admin,validate(s.policy),c.save);
+router.get('/deadlines',authenticate,allow('coordinator','technician','campus_member'),validate(s.deadlines),c.deadlines);
+router.get('/deadline-summary',authenticate,allow('admin','coordinator'),validate({}),c.metrics);
+router.get('/maintenance-requests/:id/recommendations',authenticate,allow('coordinator'),validate(s.recommendations),c.candidates);
+export default router;

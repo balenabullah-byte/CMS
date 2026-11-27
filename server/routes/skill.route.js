@@ -5,6 +5,7 @@ import validate from '../middleware/validate.middleware.js';
 import authenticate from '../middleware/auth.middleware.js';
 import allow from '../middleware/role.middleware.js';
 const router = Router();
+router.get('/specializations',authenticate,allow('admin','coordinator','technician'),validate(schemas.roster),controller.roster);
 router.get('/technician-skills', authenticate, allow('admin', 'coordinator'), validate(schemas.list), controller.list);
 router.post('/technician-skills', authenticate, allow('admin'), validate(schemas.add), controller.add);
 router.delete('/technician-skills/:technician_id/:category_id', authenticate, allow('admin'), validate(schemas.remove), controller.remove);

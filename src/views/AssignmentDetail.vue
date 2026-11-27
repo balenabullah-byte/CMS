@@ -1,4 +1,5 @@
 <script setup>
+import DeadlineTargets from "../components/DeadlineTargets.vue"
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { MapPin, ArrowLeft, ChevronDown } from 'lucide-vue-next'
@@ -47,6 +48,7 @@ function act(action, body) {
         <ArrowLeft />
         Assignments
       </RouterLink>
+      <DeadlineTargets :request-id="data.job.request_id" />
       <div class="detailhead">
         <h2 class="job-title">{{ data.job.title }}</h2>
         <small>Assigned {{ date(data.job.assigned_at) }} · {{ data.job.technician_name }}</small>

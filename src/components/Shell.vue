@@ -14,6 +14,7 @@ import {
   Menu,
   X,
 } from 'lucide-vue-next'
+import NotificationBell from './NotificationBell.vue'
 import ThemeSelect from './ThemeSelect.vue'
 import { useWorkspace, roles, portals } from '../lib/workspace'
 const w = useWorkspace(),
@@ -35,6 +36,8 @@ const groups = computed(() => {
     config.push(['Maintenance categories','/users?section=Categories',Settings2])
     analytics.push(['Account analytics','/analytics/accounts'],['Campus infrastructure','/analytics/infrastructure'],['Maintenance trends','/analytics/trends'])
   }
+  if(w.has('admin')) config.push(['Priority policies','/priority-policies',Settings2],['Administrative audit','/audit-logs',History])
+  if(w.has('technician') || w.has('coordinator')) main.push(['Deadlines','/deadlines',ListChecks])
   if(w.portal) config.push(['Buildings','/buildings',Building2])
   return w.portal ? [['Workspace',main],['Management',config],['Analytics',analytics.map(([n,p])=>[n,p,ChartColumn])]].filter(([,items])=>items.length) : []
 })
@@ -112,6 +115,7 @@ watch(
             @change="$router.push('/' + portals[$event.target.value] + '/dashboard')">
             <option v-for="role in w.available" :key="role" :value="role">{{ roles[role] }}</option>
           </select>
+          <NotificationBell :key="w.user.id"/>
           <ThemeSelect />
         <RouterLink class="account" :to="w.path('/profile')">
           <UserRound />

@@ -1,4 +1,5 @@
 <script setup>
+import DeadlineSummary from "../components/DeadlineSummary.vue"
 import { useRoute } from 'vue-router'
 import FilterToolbar from '../components/FilterToolbar.vue'
 import { api } from '../lib/api'
@@ -42,6 +43,7 @@ const { data, loading, error, refresh } = usePage(async (signal) => {
 <template>
   <LoadState :loading :error @retry="refresh">
     <div v-if="data" class="stack">
+      <DeadlineSummary v-if="w.has('admin') || w.has('coordinator')" />
       <section v-if="w.has('admin')" class="panel">
         <div class="split"><h2>University accounts</h2><RouterLink :to="w.path('/users?create=1')">Create account</RouterLink></div>
         <dl class="facts">
@@ -98,7 +100,7 @@ const { data, loading, error, refresh } = usePage(async (signal) => {
       </section>
       <section v-if="w.has('technician')" class="panel">
         <div class="split">
-          <h2>My active assignments</h2>
+          <h2>My active assignments</h2><RouterLink :to="w.path('/specializations')">My specializations</RouterLink>
           <RouterLink :to="w.path('/assignments')">View assignments</RouterLink>
         </div>
         <FilterToolbar :fields="[]" date-label="Work completion" />

@@ -83,8 +83,36 @@ await withTestApi(async (base, password) => {
   await check('DELETE', '/technician-skills/' + ids[tech] + '/' + category, 200, admin);
   const root = '/maintenance-requests';
   const report = { building_id: b, room_id: room, category_id: category, title: 'Light flickers', description: 'Inspect fixture' };
+  const policy = {response_target_minutes:60,resolution_target_minutes:300,response_warning_minutes:10,resolution_warning_minutes:30,is_active:true};
+  await check('GET','/priority-policies',200,admin,undefined,rows=>rows.length===0);
+  await check('PUT','/priority-policies/normal',403,coord,policy);
+  await check('PUT','/priority-policies/normal',400,admin,{...policy,response_warning_minutes:61});
+  await check('PUT','/priority-policies/normal',200,admin,policy);
   const request = root + '/' + (await check('POST', root, 201, member, report))?.id;
   const rejected = root + '/' + (await check('POST', root, 201, member, report))?.id;
+  const requestId=Number(request.split('/').at(-1));
+  const {default:database}=await import('../connection.js');
+  const {default:worker}=await import('../module/deadline.module.js');
+  const assert3=(await import('node:assert/strict')).default;
+  const snapshot=()=>database('request_deadlines').where({request_id:requestId}).first();
+  assert3.equal((await snapshot()).response_target_minutes,60);
+  await check('PUT','/priority-policies/normal',200,admin,{...policy,response_target_minutes:90});
+  assert3.equal((await snapshot()).response_target_minutes,60);
+  await check('GET','/notifications',200,coord,undefined,p=>p.rows.filter(r=>r.event_type==='submitted').length===2);
+  await check('GET','/notifications?user_id='+ids[coord],400,member);
+  await check('GET','/audit-logs',403,member);
+  await check('GET','/audit-logs?action=technician_skill_added',200,admin,undefined,p=>p.total===1);
+  await check('GET',request+'/recommendations',200,coord,undefined,p=>p.length===1 && p[0].matching===0 && p[0].workload===0);
+  await check('GET',request+'/recommendations',403,tech);
+  await check('GET','/deadlines',200,'other',undefined,p=>p.total===0);
+  // Change only the isolated deadline fixture. Request status still advances exclusively via HTTP.
+  await database('request_deadlines').where({request_id:requestId}).update({
+    response_due_at:database.raw('NOW() + INTERVAL 5 MINUTE'),response_next_alert:database.fn.now(),
+    resolution_due_at:database.raw('NOW() - INTERVAL 1 MINUTE'),resolution_next_alert:database.fn.now()});
+  await Promise.all([worker.process(),worker.process()]);
+  await worker.process();
+  for(const event of ['response_approaching','resolution_missed'])
+    await check('GET','/notifications?event_type='+event,200,coord,undefined,p=>p.total===1);
   const note = { note: 'Coordinator inspection' };
   const target = { technician_id: ids[tech] };
   await check('GET', root, 200, coord);
@@ -188,6 +216,17 @@ await withTestApi(async (base, password) => {
   const assert = (await import('node:assert/strict')).default;
   await assert.rejects(db('work_assignments').where({id:job}).update({labor_minutes:1}),{errno:1644});
   await assert.rejects(db('request_history').where({request_id:Number(request.split('/').at(-1))}).update({note:'Mutation test'}),{errno:1644});
+  const finalSnapshot=await snapshot();
+  assert3.ok(finalSnapshot.response_met_at && finalSnapshot.resolution_met_at);
+  await check('GET','/deadlines?condition=missed&kind=resolution',200,coord,undefined,p=>p.rows.some(r=>r.request_id===requestId));
+  await check('GET','/notifications',200,member,undefined,p=>['approved','assigned','in_progress','closed'].every(e=>p.rows.some(n=>n.event_type===e)) && !p.rows.some(n=>n.event_type==='internal_update'));
+  await check('GET','/notifications?event_type=completed',200,coord,undefined,p=>p.total===2);
+  await check('PATCH','/notifications/read',200,member,{},r=>r.unread===0);
+  await check('GET','/notifications/count',200,coord,undefined,n=>n>0);
+  await assert3.rejects(db('audit_logs').where({actor_id:self.id}).update({action:'change'}),{errno:1644});
+  await assert3.rejects(db('audit_logs').where({actor_id:self.id}).del(),{errno:1644});
+  const auditRows=await db('audit_logs').select('old_values','new_values');
+  assert3.ok(!JSON.stringify(auditRows).includes(password) && !JSON.stringify(auditRows).includes('password_hash'));
   const stored = await db('maintenance_requests').where({id: Number(request.split('/').at(-1))}).first();
   const assignment = await db('work_assignments').where({id: job}).first();
   const publicComments = await db('request_comments').where({request_id:stored.id,visibility:'reporter_visible'});

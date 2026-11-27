@@ -13,7 +13,7 @@ export const assignmentFields = { ...dimensions, technician_id:id, search:str(15
   cause:choice(...Object.keys(causes),'missing'), end_reason:choice('completed','cancelled','reassigned'),
   scope:choice('active','ended','verification','all','started','waiting'),
   date_field:choice('assigned','completed','ended','reported','closed'), labor_min:duration,labor_max:duration,
-  repair_min:duration,repair_max:duration, sort:choice('id','title','assigned','completed','ended','labor'),
+  repair_min:duration,repair_max:duration, deadline_type:choice('response','resolution'),deadline_condition:choice('on_track','approaching','overdue','met','missed','not_applicable','not_configured'),sort:choice('priority','deadline','id','title','assigned','completed','ended','labor'),
   direction:choice('asc','desc') };
 function ranges(q,h) {
   if ((q.from && q.to && q.from > q.to) || q.labor_min > q.labor_max || q.repair_min > q.repair_max)

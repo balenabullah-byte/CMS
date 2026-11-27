@@ -5,7 +5,7 @@ import { useWorkspace, label, roles } from '../lib/workspace'
 import { causes, requestStates } from '../../shared/maintenance.js'
 const props=defineProps({fields:{type:Array,required:true},technicians:{type:Array,default:()=>[]},dateLabel:{type:String,default:'Reported'},defaultScope:String})
 const w=useWorkspace(), route=useRoute(), router=useRouter(), search=ref(''), preset=ref('')
-const titles={assignment_status:'Workload group',building_id:'Building',room_id:'Room',category_id:'Maintenance category',priority:'Priority',status:'Request status',technician_id:'Technician',cause:'Root cause',end_reason:'End reason',scope:'Job state',date_field:'Date field',labor_min:'Minimum labor (min)',labor_max:'Maximum labor (min)',repair_min:'Minimum elapsed repair (min)',repair_max:'Maximum elapsed repair (min)',sort:'Sort by',direction:'Sort order',member_type:'Member type',role:'Role',active:'Account status'}
+const titles={deadline_type:'Deadline type',deadline_condition:'Deadline condition',assignment_status:'Workload group',building_id:'Building',room_id:'Room',category_id:'Maintenance category',priority:'Priority',status:'Request status',technician_id:'Technician',cause:'Root cause',end_reason:'End reason',scope:'Job state',date_field:'Date field',labor_min:'Minimum labor (min)',labor_max:'Maximum labor (min)',repair_min:'Minimum elapsed repair (min)',repair_max:'Maximum elapsed repair (min)',sort:'Sort by',direction:'Sort order',member_type:'Member type',role:'Role',active:'Account status'}
 const pairs = values => values.map(v=>[v,label(v)])
 const choices=computed(()=>({
   building_id:w.catalogs?.buildings.map(b=>[b.id,b.name]) || [],
@@ -13,9 +13,10 @@ const choices=computed(()=>({
   category_id:w.catalogs?.categories.map(c=>[c.id,c.name]) || [],
   priority:pairs(['low','normal','high']),status:pairs(requestStates),
   technician_id:props.technicians.map(t=>[t.id,t.full_name]),cause:[...Object.entries(causes),['missing','Not recorded']],
+  deadline_type:pairs(["response","resolution"]),deadline_condition:pairs(["on_track","approaching","overdue","met","missed","not_configured"]),
   end_reason:pairs(['completed','reassigned','cancelled']),scope:pairs(['all','active','waiting','started','ended','verification']),
   date_field:pairs(['assigned','completed','ended','reported','closed']),direction:[['desc','Descending'],['asc','Ascending']],
-  sort:pairs(props.fields.includes('end_reason')?['id','assigned','completed','ended','title','labor']:['id','created_at','updated_at','title']),
+  sort:pairs(props.fields.includes('end_reason')?['deadline','priority','id','assigned','completed','ended','title','labor']:['id','created_at','updated_at','title']),
   assignment_status:pairs(['active','in_progress','completed','verification']),
   role:Object.entries(roles),member_type:pairs(['student','faculty','staff','contractor']),active:[['true','Active'],['false','Inactive']],
 }))

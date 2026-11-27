@@ -1,5 +1,6 @@
 import TableModule from './base.module.js';
 import knex from '../connection.js';
+import deadlines from './deadline.module.js';
 import verification from './verification.module.js';
 import { period } from './report-filters.js';
 import { scopedWork, elapsed } from './report-filters.js';
@@ -20,12 +21,15 @@ class AssignmentModule extends TableModule {
       knex.raw(elapsed + ' as elapsed_minutes'));
   }
   async search(user, f) {
-    const base = this.base();
+    const base = this.base().leftJoin(deadlines.states().as('d'),'d.request_id','r.id');
+    const kind=f.deadline_type || 'resolution';
+    if (f.deadline_condition==='not_configured') base.whereNull('d.request_id');
+    else if(f.deadline_condition) base.where('d.'+kind+'_state',f.deadline_condition);
     if(f.date_field==='closed') verification.join(base);
     const query = scopedWork(base,user,f);
-    const fields = {id:'a.id',title:'r.title',assigned:'a.assigned_at',completed:'a.completed_at',ended:'a.ended_at',labor:'a.labor_minutes'};
+    const fields = {deadline:'d.'+kind+'_due_at',priority:'r.priority',id:'a.id',title:'r.title',assigned:'a.assigned_at',completed:'a.completed_at',ended:'a.ended_at',labor:'a.labor_minutes'};
     const [count, rows] = await Promise.all([query.clone().count({n:'*'}).first(),
-      this.rows(query.clone()).orderBy(fields[f.sort || 'id'],f.direction || 'desc').orderBy('a.id','desc').limit(f.limit).offset(f.offset)]);
+      this.rows(query.clone()).select('d.response_state','d.resolution_state','d.response_due_at','d.resolution_due_at').orderBy(fields[f.sort || 'id'],f.direction || 'desc').orderBy('a.id','desc').limit(f.limit).offset(f.offset)]);
     return {rows,total:Number(count.n),limit:f.limit,offset:f.offset};
   }
   async summary(technician,f) {

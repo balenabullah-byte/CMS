@@ -1,8 +1,25 @@
 import { period } from './report-filters.js';
 import TableModule from './base.module.js';
 import knex from '../connection.js';
+import notifications from './notification.module.js';
+import deadlines from './deadline.module.js';
 class MaintenanceModule extends TableModule {
   constructor() { super('maintenance_requests'); }
+  async create(fields, db) {
+    if (!db) return knex.transaction(trx => this.create(fields,trx));
+    const request = await super.create(fields,db);
+    await deadlines.snapshot(db,request);
+    await notifications.workflow(db,request,fields.reporter_id);
+    return request;
+  }
+  async update(id,fields,db=knex) {
+    const request = await super.update(id,fields,db);
+    if (fields.status) {
+      await deadlines.milestone(db,request);
+      await notifications.workflow(db,request,fields.status_changed_by_id);
+    }
+    return request;
+  }
   async lock(id, db) { return db(this.table).where({ id }).forUpdate().first(); }
   async accessible(user, page, id, transaction) {
     const query = (transaction || knex)(this.table);

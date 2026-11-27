@@ -1,3 +1,5 @@
+import notifications from '../module/notification.module.js';
+import audit from '../module/audit.module.js';
 import model from '../module/user.module.js';
 import membership from '../module/user-role.module.js';
 import { found } from './common.js';
@@ -53,7 +55,11 @@ class UserController {
     try {
       const { body } = req.input;
       await secure(body);
-      res.status(201).json({ data: await model.create(body) });
+      res.status(201).json({ data: await knex.transaction(async db => {
+        const row = await model.create(body,db);
+        await audit.record(db,req.user.id,'user_created','user',row.id,null,row);
+        return row;
+      }) });
     } catch (error) {
       next(error);
     }
@@ -65,7 +71,12 @@ class UserController {
       await secure(body);
       res.status(200).json({ data: await knex.transaction(async db => {
         if (body.is_active === false) await protectAdministrator(params.id, null, db);
-        return found(await model.update(params.id, body, db));
+        const before = found(await db('users').select(model.columns).where({id:params.id}).forUpdate().first());
+        const row = found(await model.update(params.id,body,db));
+        const action = row.is_active === before.is_active ? 'user_updated' : row.is_active ? 'user_activated' : 'user_deactivated';
+        if (!body.password_hash || Object.keys(body).length>1) await audit.record(db,req.user.id,action,'user',row.id,before,row);
+        if (body.password_hash) await audit.record(db,req.user.id,'password_reset','user',row.id,null,null);
+        return row;
       }) });
     } catch (error) {
       next(error);
@@ -85,7 +96,11 @@ class UserController {
   async grant(req, res, next) {
     try {
       const { body, params } = req.input;
-      await membership.grant(params.id, body.role_id);
+      await knex.transaction(async db=>{
+        await membership.grant(params.id,body.role_id,db);
+        const [auditId]=await audit.record(db,req.user.id,'role_assigned','role',params.id,null,body);
+        await notifications.adminGrant(db,req.user.id,body.role_id,auditId);
+      });
       res.status(201).json({ data: { granted: true } });
     } catch (error) {
       next(error);
@@ -98,6 +113,7 @@ class UserController {
       await knex.transaction(async db => {
         await protectAdministrator(params.id, params.role_id, db);
         found(await membership.revoke(params.id, params.role_id, db));
+        await audit.record(db,req.user.id,'role_removed','role',params.id,params,null);
       });
       res.status(200).json({ data: { revoked: true } });
     } catch (error) {

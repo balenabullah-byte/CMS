@@ -800,5 +800,9 @@
   .workspace aside .nav-group {display:none}
   .workspace aside nav a {justify-content:center}
 }
+.workspace .notification-menu {position:relative}
+.workspace .notification-menu summary {cursor:pointer;display:flex;align-items:center;gap:4px;min-height:36px}
+.workspace .notification-menu .panel {position:absolute;z-index:10;right:0;width:min(280px,80vw);background:var(--surface)}
+@media(max-width:767px){.workspace .notification-menu .panel {right:auto;left:0}}
 .workspace .pager>span {margin-inline-end:auto}
 .workspace .table-scroll .records .actions {min-width:7rem}

@@ -99,6 +99,8 @@ All paths below start with /api. An asterisk means any authenticated user. Succe
 
 ## Storage and operation
 
+Before starting the Phase 3 API against an existing Phase 2.1 database, apply [migration 003](migrations/003_maintenance_operations.sql) to that database. New installations can use [the full schema](schema.sql). To track deadlines, an administrator must activate a policy for the relevant priority under **Priority policies**. New requests take a snapshot of the policy at submission.
+
 MariaDB triggers create submission, transition and assignment history. Workflow transactions lock the request before changing assignments. The generated active_request_id unique index provides an additional database constraint. Roles are the four existing permission codes. Administrators can change descriptions and grant or revoke memberships.
 
 The session cookie expires after eight hours. Sessions persist across process restarts in SESSION_DIR. Expired records can be removed after eight hours. Rate limits apply per IP per process. Production cookies require HTTPS. The local API listens on loopback.

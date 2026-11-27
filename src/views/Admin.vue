@@ -173,7 +173,7 @@ function selectTab(t) {
         </div>
       </section>
       <section v-if="tab === 'Technician skills'" class="panel">
-        <h2>Technician skills</h2>
+        <h2>Technician skills</h2><RouterLink :to="w.path('/specializations')">Find technician IDs and specializations</RouterLink>
         <form class="toolbar" @submit.prevent="skill(null)">
           <label>
             Technician ID
