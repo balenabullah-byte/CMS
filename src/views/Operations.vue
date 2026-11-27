@@ -1,11 +1,11 @@
 <script setup>
 import {computed} from 'vue'
 import {useRoute,useRouter} from 'vue-router'
-import {description,destination} from '../lib/notifications'
+import {destination} from '../lib/notifications'
 import {Bell} from 'lucide-vue-next'
 import {api} from '../lib/api'
 import {useReportQuery} from '../lib/reporting'
-import {useWorkspace,usePage,useAction,date,label,portals} from '../lib/workspace'
+import {useWorkspace,usePage,useAction,date,label} from '../lib/workspace'
 import ReportPager from '../components/ReportPager.vue'
 import LoadState from '../components/LoadState.vue'
 const route=useRoute(),router=useRouter(),w=useWorkspace(),{page,parameters,go}=useReportQuery()
@@ -20,7 +20,7 @@ const {run,busy,error:failure}=useAction()
 function read(n,open=false){run(async()=>{
   await api('/notifications/'+(n?n.id+'/':'')+'read',{method:'PATCH'})
   window.dispatchEvent(new Event('notifications-read'))
-  if(open && w.available.includes(n.portal)) await router.push(destination(n))
+  if(open && n.portal===w.portal) await router.push(destination(n))
   else await refresh()
 })}
 </script>

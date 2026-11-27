@@ -14,7 +14,7 @@ const { data, loading, error, refresh } = usePage(async (signal) => {
     api('/maintenance-requests?limit=' + n + (status ? '&status=' + status : ''), { signal })
   const coord = w.has('coordinator')
   const [recent, submitted, approved, reopened, stats, jobs] = await Promise.all([
-    w.has('campus_member') ? api('/maintenance-requests?limit=6&sort=updated_at',{signal}) : w.canRead ? list('',10) : [],
+    w.has('campus_member') ? api('/maintenance-requests?limit=6&sort=updated_at',{signal}) : coord ? list('',10) : [],
     coord ? list('submitted', 10) : [],
     coord ? list('approved', 2) : [],
     coord ? list('reopened', 2) : [],
@@ -36,7 +36,7 @@ const { data, loading, error, refresh } = usePage(async (signal) => {
     ready: [...approved, ...reopened].sort((a, b) => b.id - a.id).slice(0, 2),
     stats: Object.fromEntries(stats.map((x) => [x.status, Number(x.count)])),
     max: Math.max(1, ...stats.map((x) => Number(x.count))),
-    jobs: jobs.filter((x) => x.technician_id === w.user.id && !x.ended_at),
+    jobs,
   }
 },()=>route.fullPath,{refetchOnFocus:true})
 </script>
@@ -112,7 +112,7 @@ const { data, loading, error, refresh } = usePage(async (signal) => {
         </RouterLink>
         <p class="empty" v-if="!data.jobs.length">No active assignments.</p>
       </section>
-      <section v-if="w.canRead" class="panel">
+      <section v-if="w.has('coordinator') || w.has('campus_member')" class="panel">
         <div class="split">
           <h2>
             {{

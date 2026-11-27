@@ -9,8 +9,8 @@ class CommentModule extends TableModule {
     await notifications.comment(db,comment);
     return comment;
   }
-  async list(request_id, page, staff) {
-    const query = knex(this.table).where({ request_id });
+  async list(request_id, page, staff, db=knex) {
+    const query = db(this.table).where({ request_id });
     if (!staff) query.where('visibility', 'reporter_visible');
     return query.orderBy('id').limit(page.limit).offset(page.offset);
   }

@@ -7,7 +7,7 @@ defineProps({job:Object})
   <dl class="facts">
     <dt>Assignment</dt><dd>#{{ job.id }} · {{ job.technician_name }}</dd>
     <dt>Location</dt><dd>{{ job.building }} {{ job.room_code }}</dd>
-    <dt>Category / priority</dt><dd>{{ job.category }} · {{ label(job.priority) }}</dd>
+    <dt>{{job.priority ? 'Category / priority' : 'Category'}}</dt><dd>{{ job.category }}<template v-if="job.priority"> · {{ label(job.priority) }}</template></dd>
     <dt>Ended</dt><dd>{{ label(job.end_reason) }} · {{ date(job.ended_at) }}</dd>
     <dt>Assigned / started</dt><dd>{{ date(job.assigned_at) }} / {{ date(job.started_at) }}</dd>
     <template v-if="job.end_reason==='completed'">
@@ -23,6 +23,6 @@ defineProps({job:Object})
       <dt>Verification of this repair</dt><dd>{{ job.decision==='closed'?'Verified and closed':job.decision==='reopened'?'Additional work requested':'No confirmed closure' }}
         <span v-if="job.decision_at"> · {{ date(job.decision_at) }}</span></dd>
     </template>
-    <dt>Current request status</dt><dd>{{ label(job.status) }}</dd>
+    <template v-if="job.status"><dt>Current request status</dt><dd>{{ label(job.status) }}</dd></template>
   </dl>
 </template>

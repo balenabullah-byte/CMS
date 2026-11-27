@@ -55,7 +55,8 @@ function post() {
 <template>
   <LoadState :loading :error @retry="refresh">
     <template v-if="data">
-      <RouterLink :to="w.path('/requests')">← Maintenance requests</RouterLink>
+      <RouterLink v-if="w.has('technician')" :to="w.path('/assignments')">← My jobs</RouterLink>
+      <RouterLink v-else :to="w.path('/requests')">← Maintenance requests</RouterLink>
       <div class="detailhead">
         <h2>{{ data.r.title }}</h2>
         <p>

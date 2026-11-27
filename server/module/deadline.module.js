@@ -1,5 +1,6 @@
 import knex from '../connection.js';
 import notifications from './notification.module.js';
+import {activeRequestIds} from './report-filters.js';
 const kinds=['response','resolution'];
 class DeadlineModule {
   async snapshot(db,request){
@@ -35,7 +36,7 @@ class DeadlineModule {
   async list(user,f){
     const q=knex.from(this.states().as('s'));
     if(!user.roles.some(r=>['coordinator','admin'].includes(r))){
-      if(user.roles.includes('technician')) q.whereIn('request_id',knex('work_assignments').where({technician_id:user.id}).select('request_id'));
+      if(user.roles.includes('technician')) q.whereIn('request_id',activeRequestIds(knex,user.id));
       else q.where({reporter_id:user.id});
     }
     if(f.request_id) q.where({request_id:f.request_id});

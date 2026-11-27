@@ -11,10 +11,11 @@ class NotificationModule {
         if (audiences.includes('technician') && job) this.orWhere({ 'r.code':'technician','u.id':job.technician_id });
       }).select('u.id','r.code').orderBy('r.code');
     if (actor) recipients.whereNot('u.id',actor);
-    const rows = new Map();
-    for (const {id,code} of await recipients) rows.set(id,{user_id:id,request_id:request.id,
-      assignment_id:code==='technician'?job.id:null,portal:code,event_type:event,deduplication_key:identity});
-    if (rows.size) await db('notifications').insert([...rows.values()]).onConflict(['user_id','deduplication_key']).ignore();
+    const rows = (await recipients).map(({id,code}) => ({
+      user_id:id, request_id:request.id, assignment_id:code==='technician'?job.id:null,
+      portal:code, event_type:event, deduplication_key:audiences.length===1 ? identity : identity+':'+code
+    }));
+    if (rows.length) await db('notifications').insert(rows).onConflict(['user_id','deduplication_key']).ignore();
   }
   async workflow(db, request, actor) {
     const event = request.status;
@@ -48,8 +49,7 @@ class NotificationModule {
       internal?['coordinator','technician']:['coordinator','technician','campus_member'],job);
   }
   inbox(user) {
-    return knex('notifications').where({user_id:user.id}).whereIn('portal',
-      knex('user_roles as ur').join('roles as r','r.id','ur.role_id').where('ur.user_id',user.id).select('r.code'))
+    return knex('notifications').where({user_id:user.id}).whereIn('portal',user.roles)
       .where(function(){
         this.whereNot('event_type','internal_update').orWhere('portal','coordinator')
           .orWhereIn('assignment_id',knex('work_assignments').where({technician_id:user.id}).whereNull('ended_at').select('id'));
@@ -67,7 +67,10 @@ class NotificationModule {
   async count(user){return Number((await this.inbox(user).whereNull('read_at').count({n:'*'}).first()).n);}
   async read(user,id){
     const q=this.inbox(user);
-    if(id) q.where({id});
+    if(id) {
+      q.where({id});
+      if (!await q.clone().first('id')) return null;
+    }
     await q.whereNull('read_at').update({read_at:knex.fn.now()});
     return {unread:await this.count(user)};
   }

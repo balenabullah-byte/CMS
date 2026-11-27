@@ -1,4 +1,4 @@
-import { period } from './report-filters.js';
+import { activeRequestIds, period } from './report-filters.js';
 import TableModule from './base.module.js';
 import knex from '../connection.js';
 import notifications from './notification.module.js';
@@ -21,14 +21,13 @@ class MaintenanceModule extends TableModule {
     return request;
   }
   async lock(id, db) { return db(this.table).where({ id }).forUpdate().first(); }
-  async accessible(user, page, id, transaction) {
-    const query = (transaction || knex)(this.table);
-    if (transaction) query.forUpdate();
+  async accessible(user, page, id, db=knex) {
+    const query = db(this.table);
     if (!user.roles.includes('coordinator')) {
       query.where(function () {
         this.whereRaw('1 = 0');
         if (user.roles.includes('campus_member')) this.orWhere('reporter_id', user.id);
-        if (user.roles.includes('technician')) this.orWhereIn('id', knex('work_assignments').select('request_id').where({ technician_id: user.id }).whereNull('ended_at'));
+        if (user.roles.includes('technician')) this.orWhereIn('id', activeRequestIds(db,user.id));
       });
     }
     if (!user.roles.includes('coordinator')) {

@@ -7,6 +7,16 @@ import knex from '../connection.js';
 import { found, state } from './common.js';
 import { fail } from '../middleware/error.middleware.js';
 
+// Keep the authorization decision and related rows in the same read snapshot.
+function readRelated(req, list) {
+  const {params,query} = req.input;
+  return knex.transaction(async db => {
+    found(await model.accessible(req.user,{},params.id,db));
+    const staff = req.user.roles.some(role => role === 'coordinator' || role === 'technician');
+    return list(params.id,query,staff,db);
+  }, {isolationLevel:'repeatable read'});
+}
+
 class MaintenanceController {
   async list(req, res, next) {
     try {
@@ -129,19 +139,13 @@ class MaintenanceController {
 
   async attachments(req,res,next) {
     try {
-      const {params,query}=req.input;
-      found(await model.accessible(req.user,{},params.id));
-      const staff=req.user.roles.includes('coordinator') || (req.user.roles.includes('technician') && await assignments.isAssigned(params.id,req.user.id));
-      res.json({data:await attachments.list(params.id,req.user.id,staff,query)});
+      res.json({data:await readRelated(req,(id,page,staff,db)=>attachments.list(id,req.user.id,staff,page,db))});
     } catch(error) {next(error)}
   }
 
   async history(req, res, next) {
     try {
-      const { params, query } = req.input;
-      const user = req.user;
-      found(await model.accessible(user, query, params.id));
-      res.status(200).json({ data: await history.list(params.id, query, user.roles.includes('coordinator') || (user.roles.includes('technician') && await assignments.isAssigned(params.id, user.id))) });
+      res.json({data:await readRelated(req,(id,page,staff,db)=>history.list(id,page,staff,db))});
     } catch (error) {
       next(error);
     }
@@ -149,11 +153,7 @@ class MaintenanceController {
 
   async comments(req, res, next) {
     try {
-      const { params, query } = req.input;
-      const user = req.user;
-      found(await model.accessible(user, query, params.id));
-      const staff = user.roles.includes('coordinator') || (user.roles.includes('technician') && await assignments.isAssigned(params.id, user.id));
-      res.status(200).json({ data: await comments.list(params.id, query, staff) });
+      res.json({data:await readRelated(req,(id,page,staff,db)=>comments.list(id,page,staff,db))});
     } catch (error) {
       next(error);
     }
@@ -164,10 +164,12 @@ class MaintenanceController {
       const { body, params, query } = req.input;
       const user = req.user;
       const data = await knex.transaction(async db => {
+        // Assignment changes lock this same request before changing its owner.
+        // Take that lock before reading membership for either comment visibility.
+        found(await model.lock(params.id,db));
         const request = found(await model.accessible(user, query, params.id, db));
         if (['closed','rejected'].includes(request.status)) fail(409, 'Comments are read-only on ' + request.status + ' requests.');
-        if (body.visibility === 'staff_only' && !user.roles.includes('coordinator') &&
-            !(user.roles.includes('technician') && await assignments.isAssigned(params.id, user.id, db)))
+        if (body.visibility === 'staff_only' && !user.roles.some(role=>role==='coordinator' || role==='technician'))
           fail(403, 'Staff access required');
         return comments.create({ ...body, request_id: params.id, author_id: user.id }, db);
       });

@@ -11,8 +11,14 @@ export function dimensions(query, filter, alias = 'r') {
   return query;
 }
 export const elapsed = 'TIMESTAMPDIFF(MINUTE,a.started_at,a.completed_at)';
-export function scopedWork(query, user, f) {
-  if (!user.roles.includes('coordinator')) query.where('a.technician_id',user.id);
+export const activeWorkStates = ['assigned','in_progress'];
+
+export function activeRequestIds(db, technicianId) {
+  return db('work_assignments as a').join('maintenance_requests as r','r.id','a.request_id')
+    .where('a.technician_id',technicianId).whereNull('a.ended_at')
+    .whereIn('r.status',activeWorkStates).select('a.request_id');
+}
+export function scopedWork(query, f) {
   dimensions(query,f);
   if (f.scope === 'ended') query.whereNotNull('a.ended_at');
   if (['active','waiting','started'].includes(f.scope)) query.whereNull('a.ended_at');

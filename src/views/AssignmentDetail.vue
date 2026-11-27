@@ -48,13 +48,13 @@ function act(action, body) {
         <ArrowLeft />
         Assignments
       </RouterLink>
-      <DeadlineTargets :request-id="data.job.request_id" />
+      <DeadlineTargets v-if="data.request" :request-id="data.job.request_id" />
       <div class="detailhead">
         <h2 class="job-title">{{ data.job.title }}</h2>
         <small>Assigned {{ date(data.job.assigned_at) }} · {{ data.job.technician_name }}</small>
         <p>Request #{{ data.job.request_id }} · Assignment #{{ id }}</p>
         <div class="actions">
-          <Badge :value="data.job.end_reason || data.request?.status" /><Badge :value="data.job.priority" />
+          <Badge :value="data.job.end_reason || data.request?.status" /><Badge v-if="data.job.priority" :value="data.job.priority" />
           <span class="inline" v-if="data.request">
             <MapPin />
             {{ w.building(data.request.building_id) }}
@@ -62,7 +62,7 @@ function act(action, body) {
           </span>
         </div>
       </div>
-      <details open class="panel job-description">
+      <details v-if="data.request" open class="panel job-description">
         <summary>
           Request description
           <ChevronDown aria-hidden="true" />

@@ -115,7 +115,7 @@ watch(
             @change="$router.push('/' + portals[$event.target.value] + '/dashboard')">
             <option v-for="role in w.available" :key="role" :value="role">{{ roles[role] }}</option>
           </select>
-          <NotificationBell :key="w.user.id"/>
+          <NotificationBell :key="w.user.id + ':' + w.portal"/>
           <ThemeSelect />
         <RouterLink class="account" :to="w.path('/profile')">
           <UserRound />

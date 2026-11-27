@@ -17,7 +17,7 @@ const pages = [
     route('/dashboard', 'Dashboard', 'Dashboard'),
     route('/buildings', 'Buildings', 'Buildings'),
     route('/buildings/:id(\\d+)', 'Building', 'Buildings'),
-    route('/requests', 'Maintenance requests', 'Requests', readers),
+    route('/requests', 'Maintenance requests', 'Requests', ['coordinator','campus_member']),
     route('/requests/new', 'New request', 'NewRequest', ['campus_member']),
     route('/requests/:id(\\d+)', 'Request details', 'RequestDetail', readers),
     route('/assignments', 'Assignments', 'Assignments', ['coordinator', 'technician']),

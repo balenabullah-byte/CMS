@@ -11,7 +11,7 @@ function respond(operation){
 export default {
  notices:respond((user,{query})=>inbox.list(user,query)),
  count:respond(user=>inbox.count(user)),
- read:respond((user,{params})=>inbox.read(user,params.id)),
+ read:respond(async(user,{params})=>found(await inbox.read(user,params.id))),
  audit:respond((user,{query})=>audit.list(query)),
  policies:respond(()=>policies.list()),
  save:respond((user,{params,body})=>policies.save(params.priority,body,user.id)),

@@ -8,6 +8,7 @@ await withTestApi(async (base, password) => {
     const name = method + ' ' + path + ' (' + [role || 'public', label].filter(Boolean).join(', ') + ')';
     const headers = {};
     if (role && sessions[role]) headers.Cookie = sessions[role];
+    if (role === 'other' && path.startsWith('/assignments/')) headers['X-Campus-Role']='technician';
     if (body) headers['Content-Type'] = 'application/json';
     let response;
     try {
