@@ -99,6 +99,7 @@ async function saved(row) {
         <section class="panel">
           <div class="split">
             <h2>{{ building.name }}</h2>
+            <RouterLink v-if="w.has('admin')" :to="w.path('/qr-labels')+'?type=building&id='+building.id">Building QR label</RouterLink>
             <button
               v-if="w.has('admin')"
               class="secondary"
@@ -123,6 +124,7 @@ async function saved(row) {
           </div>
           <div v-for="r in data.rooms.filter((x) => x.building_id === id)" class="listrow">
             <b>{{ r.room_code }}</b>
+            <RouterLink v-if="w.has('admin')" :to="w.path('/qr-labels')+'?type=room&id='+r.id">Room QR label</RouterLink>
             <span>{{ r.is_active ? 'Active' : 'Inactive' }}</span>
             <button
               class="textbtn"

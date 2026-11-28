@@ -1,6 +1,7 @@
 import knex from '../connection.js';
 import {period} from './report-filters.js';
 const fields={
+ qr_code:['asset_id','room_id','building_id','previous_id'],
  asset_category:['code','name','description','is_active'],
  asset:['asset_code','name','asset_category_id','building_id','room_id','manufacturer','model','serial_number','description',
    'operational_status','purchase_date','installation_date','warranty_expires_at','retired_at','retired_by_id','retirement_reason'],

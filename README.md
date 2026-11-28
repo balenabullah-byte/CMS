@@ -35,6 +35,14 @@ npm install
 npm run dev
 ```
 
+### QR maintenance labels
+
+Set `CMS_PUBLIC_BASE_URL` in `server/.env` to the frontend origin and restart the API. The origin must contain only a scheme, host and optional port. Label generation requires this setting. Existing tokens remain stable when the origin changes.
+
+For a phone test, use a trusted private network and a disposable campus member account. First configure XAMPP MariaDB with `bind-address=127.0.0.1` under `[mysqld]`, restart MariaDB during an authorized maintenance window, and verify the port 3306 listener is loopback-only. Keep Express on loopback. Build the frontend with `npm run build`, then run `npm run preview -- --host <PC-private-IPv4> --port 4173 --strictPort`. Set the label origin to `http://<PC-private-IPv4>:4173` or an authorized HTTPS origin. Restrict frontend access to your test device on the private network. The preview server proxies `/api` to local Express. Use trusted HTTPS for real university credentials.
+
+In the administrator portal, open **QR labels**, select resources and generate labels. Print the sheet or download individual PNGs. Use the phone camera to open a label, sign in and submit a report. Development labels carry a visible development mark. For Phase 3.8, configure the permanent HTTPS origin, set `NODE_ENV=production`, restart the API and generate the labels again. Reprinting preserves active tokens. Replace physical development labels because printed URLs retain the original host. [Implementation and verification](PHASE-3.4.md)
+
 ### Compile and Minify for Production
 
 ```sh

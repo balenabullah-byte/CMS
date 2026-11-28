@@ -1,8 +1,9 @@
 import { reportPage } from './reporting.validation.js';
+import {token} from './qr.validation.js';
 import { J, id, str, page } from './common.js';
 export default {
   list: { query: reportPage },
-  create: { body: J.object({ building_id: id.required(), room_id: id.allow(null), asset_id:id.allow(null), category_id: id.required(), title: str(150).required(), description: str(12000).required(), location_note: str(255) }) },
+  create: { body: J.object({ qr_token:token, building_id: id.required(), room_id: id.allow(null), asset_id:id.allow(null), category_id: id.required(), title: str(150).required(), description: str(12000).required(), location_note: str(255) }) },
   detail: { params: J.object({ id: id.required() }) },
   stats: {  },
   approve: { params: J.object({ id: id.required() }), body: J.object({ note: str(500) }) },

@@ -9,6 +9,8 @@ const route = (path, name, view, roles) => ({
 })
 const readers = ['coordinator', 'technician', 'campus_member']
 const pages = [
+    route('/qr-labels','QR labels','QrLabels',['admin']),
+    route('/analytics/qr','QR reporting','QrAnalytics',['admin','coordinator']),
     route('/assets','Asset directory','Assets',['admin','coordinator']),
     route('/assets/:id(\\d+)','Asset details','AssetDetail',['admin','coordinator']),
     route('/asset-categories','Asset categories','Assets',['admin']),
@@ -42,6 +44,7 @@ const router = createRouter({
     { path: '/', component: views['../views/Dashboard.vue'] },
     route('/login', 'Sign in', 'Login'),
     route('/unavailable', 'Access denied', 'Unavailable'),
+    { ...route('/scan/:token','Scan equipment or location','NewRequest',['campus_member']), meta:{portal:'campus_member',roles:['campus_member'],title:'Report an issue'} },
     ...pages,
     ...Object.entries(portals).flatMap(([role, prefix]) => pages.map(page => ({
       ...page, path: '/' + prefix + page.path, name: prefix + '-' + page.name,

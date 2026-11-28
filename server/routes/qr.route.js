@@ -1,0 +1,13 @@
+import {Router} from 'express';
+import auth from '../middleware/auth.middleware.js';
+import allow from '../middleware/role.middleware.js';
+import validate from '../middleware/validate.middleware.js';
+import v from '../validation/qr.validation.js';
+import c from '../controller/qr.controller.js';
+const r=Router(), admin=allow('admin');
+r.get('/qr/:type/:id',auth,admin,validate(v.history),c.history);
+r.post('/qr/:type/:id',auth,admin,validate(v.generate),c.generate);
+r.post('/qr-revocations/:id',auth,admin,validate(v.revoke),c.revoke);
+r.get('/scan/:token',auth,allow('campus_member'),validate(v.scan),c.resolve);
+r.get('/analytics/qr',auth,allow('admin','coordinator'),c.analytics);
+export default r;

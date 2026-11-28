@@ -39,6 +39,7 @@ function select(t) {
             <div>
               <small>{{ data.asset_code }}</small>
               <h2>{{ data.name }}</h2>
+              <RouterLink v-if="w.has('admin')" :to="w.path('/qr-labels')+'?type=asset&id='+id">Equipment QR label</RouterLink>
             </div>
             <Badge :value="data.operational_status" />
           </div>

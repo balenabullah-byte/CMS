@@ -40,6 +40,8 @@ const groups = computed(() => {
   if(w.has('technician') || w.has('coordinator')) main.push(['Deadlines','/deadlines',ListChecks])
   if(w.portal) config.push(['Buildings','/buildings',Building2])
   const assets=[]
+  if(w.has('admin')) config.push(['QR labels','/qr-labels',ClipboardList])
+  if(w.has('admin') || w.has('coordinator')) analytics.push(['QR reporting','/analytics/qr'])
   if(w.has('admin') || w.has('coordinator')) assets.push(['Asset directory','/assets',ClipboardList])
   if(w.has('admin')) assets.push(['Asset categories','/asset-categories',Settings2],['Asset analytics','/analytics/assets',ChartColumn])
   return w.portal ? [['Workspace',main],['Asset management',assets],['Management',config],['Analytics',analytics.map(([n,p])=>[n,p,ChartColumn])]].filter(([,items])=>items.length) : []

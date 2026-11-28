@@ -81,7 +81,7 @@ await withTestApi(async (base, password) => {
             (width === 1440 && theme === 'light') ||
             (width === 375 && theme === 'dark') ||
             (name === 'directory' && [768, 823, 1024].includes(width) && theme === 'system')
-          if (process.env.UI_SCREENSHOTS && sample)
+          if (process.env.UI_SCREENSHOTS && sample && (!process.env.TEST_QR_REPORTING || name.startsWith('qr-') || name==='member-report'))
             await page.screenshot({
               path: join(process.env.UI_SCREENSHOTS, name + '-' + width + '-' + theme + '.png'),
               animations: 'disabled',
@@ -280,10 +280,16 @@ await withTestApi(async (base, password) => {
       201
     )
     assert.equal(ordinary.asset_id, null)
+    let qr
+    if(process.env.TEST_QR_REPORTING){
+      const {scanProjector}=await import('./qr-acceptance.mjs')
+      qr=await scanProjector({origin,page,student,admin,coord,a,b,call,id,building,oldRoom,report,layout,password})
+    } else {
     await student.page.goto(origin + '/member/requests/new')
     await student.page.getByLabel('Building', { exact: true }).selectOption(String(building.id))
     await student.page.getByLabel('Room (optional)').selectOption(String(oldRoom.id))
     await student.page.getByLabel('Equipment (optional)').selectOption(String(id))
+    }
     await student.page.getByLabel('Category', { exact: true }).selectOption(String(maintenance.id))
     await student.page.getByLabel('Title', { exact: true }).fill(report.title)
     await student.page.getByLabel('Description', { exact: true }).fill(report.description)
@@ -388,6 +394,7 @@ await withTestApi(async (base, password) => {
     await page.getByRole('button', { name: 'Confirm transfer' }).click()
     await page.getByText('Projectors · Engineering Hall · 203', { exact: true }).waitFor()
     await layout(page, 'asset-details')
+    if(qr){const {verifyMoved}=await import('./qr-acceptance.mjs');await verifyMoved({qr,student,admin,coord,call,newRoom,report,id})}
     const moved = await call(admin, assetPath)
     const [movement] = (await call(admin, assetPath + '/locations')).rows
     assert.equal(moved.room_id, newRoom.id)
@@ -425,6 +432,7 @@ await withTestApi(async (base, password) => {
     assert.equal(hist.length, 3)
     assert.ok(hist.every((r) => r.reported_room === '101' && r.was_reopened))
     assert.equal(hist.find((r) => r.assignment_id === replacement.id).end_reason, null)
+    const retiredLabel = qr && await call(admin,'/qr/asset/'+parallel[1].id,'POST',{})
     await call(admin, '/assets/' + parallel[1].id + '/retire', 'POST', {}, 400)
     await page.goto(origin + '/admin/assets/' + parallel[1].id)
     await layout(page, 'retirement-dialog', 'Retire')
@@ -440,6 +448,16 @@ await withTestApi(async (base, password) => {
       409
     )
     await call(admin, '/assets/' + parallel[1].id + '/transfer', 'POST', transfer, 409)
+    if(qr) {
+      await call(student,new URL(retiredLabel.url).pathname,'GET',undefined,409)
+      const roomLabel = await call(admin,'/qr/room/'+newRoom.id,'POST',{})
+      await call(admin,'/rooms/'+newRoom.id,'PATCH',{is_active:false})
+      await call(student,new URL(roomLabel.url).pathname,'GET',undefined,409)
+      await call(admin,'/rooms/'+newRoom.id,'PATCH',{is_active:true})
+      await coord.page.goto(origin+'/coordinator/analytics/qr')
+      await coord.page.getByRole('heading',{name:'Reports by source'}).waitFor()
+      await layout(coord.page,'qr-analytics')
+    }
     const stats = await call(admin, '/analytics/assets')
     const metric = (key) => stats.metrics.find((m) => m.label === key).value
     assert.equal(metric('Registered assets'), 6)

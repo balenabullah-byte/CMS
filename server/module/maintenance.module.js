@@ -4,10 +4,12 @@ import knex from '../connection.js';
 import notifications from './notification.module.js';
 import deadlines from './deadline.module.js';
 import assets from './asset.module.js';
+import qr from './qr.module.js';
 class MaintenanceModule extends TableModule {
   constructor() { super('maintenance_requests'); }
   async create(fields, db) {
     if (!db) return knex.transaction(trx => this.create(fields,trx));
+    fields = await qr.submission(db,fields);
     if (fields.asset_id) await assets.validateReport(db,fields);
     const request = await super.create(fields,db);
     await deadlines.snapshot(db,request);
