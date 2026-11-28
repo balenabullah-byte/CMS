@@ -3,6 +3,8 @@ import qr from '../module/qr.module.js';
 import {fail} from '../middleware/error.middleware.js';
 
 function origin() {
+  if (!process.env.CMS_PUBLIC_BASE_URL?.trim())
+    fail(503,'Set CMS_PUBLIC_BASE_URL in server/.env, then restart the backend API.');
   let url;
   try { url = new URL(process.env.CMS_PUBLIC_BASE_URL); } catch {}
   const production = process.env.NODE_ENV === 'production';
@@ -10,7 +12,9 @@ function origin() {
   if (!url || url.username || url.password || url.pathname !== '/' || url.search || url.hash ||
     (url.protocol !== 'https:' && !(url.protocol === 'http:' && privateHost && !production)) ||
     (production && (privateHost || !url.hostname.includes('.') || url.hostname.endsWith('.localhost') || /^[\d.]+$/.test(url.hostname))))
-    fail(503,'Configure CMS_PUBLIC_BASE_URL before generating labels.');
+    fail(503,production
+      ? 'CMS_PUBLIC_BASE_URL must be a public HTTPS application origin. Check server/.env and restart the API.'
+      : 'CMS_PUBLIC_BASE_URL must be an HTTPS origin or a localhost or private IPv4 HTTP origin, without credentials, path, query or fragment. Restart the API after editing server/.env.');
   return url.origin;
 }
 function handle(fn) {

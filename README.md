@@ -37,6 +37,8 @@ npm run dev
 
 ### QR maintenance labels
 
+From the repository root run `npm run api` for Express and `npm run dev` in a second terminal for Vue. Express reads the ignored `server/.env` relative to its own source at process startup. Existing process environment variables take precedence. After editing the file, stop the API with Ctrl+C in its terminal and run `npm run api` again. Restarting Vite alone leaves the old API environment in memory. The desktop development origin is `http://localhost:5173` when Vite listens on that port. [Asset registration, fixtures and persistence checks](PHASE-3.4-FIXES.md)
+
 Set `CMS_PUBLIC_BASE_URL` in `server/.env` to the frontend origin and restart the API. The origin must contain only a scheme, host and optional port. Label generation requires this setting. Existing tokens remain stable when the origin changes.
 
 For a phone test, use a trusted private network and a disposable campus member account. First configure XAMPP MariaDB with `bind-address=127.0.0.1` under `[mysqld]`, restart MariaDB during an authorized maintenance window, and verify the port 3306 listener is loopback-only. Keep Express on loopback. Build the frontend with `npm run build`, then run `npm run preview -- --host <PC-private-IPv4> --port 4173 --strictPort`. Set the label origin to `http://<PC-private-IPv4>:4173` or an authorized HTTPS origin. Restrict frontend access to your test device on the private network. The preview server proxies `/api` to local Express. Use trusted HTTPS for real university credentials.

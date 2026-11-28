@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "api": "node server/index.js",
+    "seed:assets": "node server/seeds/dev-assets.mjs",
     "dev": "vite",
     "test": "node --test server/tests/*.test.js",
     "test:api": "node server/tests/api-full-test.mjs",

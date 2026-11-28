@@ -19,6 +19,11 @@ export async function scanProjector({origin,page,student,admin,coord,a,b,call,id
   process.env.CMS_PUBLIC_BASE_URL=origin
   await page.goto(origin+'/admin/qr-labels?type=asset&id='+id)
   const generateButton=page.getByRole('button',{name:'Generate labels'})
+  process.env.CMS_PUBLIC_BASE_URL=''
+  await generateButton.click()
+  await page.getByRole('alert').filter({hasText:'Set CMS_PUBLIC_BASE_URL in server/.env'}).waitFor()
+  await layout(page,'qr-configuration-error')
+  process.env.CMS_PUBLIC_BASE_URL=origin
   await generateButton.focus()
   assert.ok(await generateButton.evaluate(el=>el===document.activeElement))
   await page.keyboard.press('Enter')

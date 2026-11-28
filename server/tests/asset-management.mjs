@@ -187,6 +187,12 @@ await withTestApi(async (base, password) => {
     assert.equal(e.warranty_expires_at, '2030-10-15')
     assert.equal(e.purchase_date, null)
     await layout(page, 'edit-equipment', 'Edit equipment')
+    await page.getByRole('button',{name:'Edit equipment',exact:true}).click()
+    await page.getByText('Equipment details and warranty',{exact:true}).click()
+    await page.getByLabel('Model',{exact:true}).fill('P2 revision B')
+    await page.getByRole('button',{name:'Save',exact:true}).click()
+    await page.getByText('P2 revision B',{exact:true}).waitFor()
+    assert.equal((await call(admin,assetPath)).model,'P2 revision B')
     await layout(page, 'change-status', 'Change status')
     const register = { asset_category_id: cat.id, building_id: building.id, name: 'Portable projector' }
     const parallel = await Promise.all(

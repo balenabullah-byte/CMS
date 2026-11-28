@@ -1,3 +1,4 @@
+import './environment.js';
 import express from 'express';
 import knex from './connection.js';
 import { pathToFileURL } from 'node:url';
