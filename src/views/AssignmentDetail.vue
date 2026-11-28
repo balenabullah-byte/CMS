@@ -1,5 +1,6 @@
 <script setup>
 import DeadlineTargets from "../components/DeadlineTargets.vue"
+import RequestEquipment from '../components/RequestEquipment.vue'
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { MapPin, ArrowLeft, ChevronDown } from 'lucide-vue-next'
@@ -75,6 +76,8 @@ function act(action, body) {
       <section v-if="owned && data.request.status === 'assigned'" class="panel">
         <button class="primary" :disabled="busy" @click="act('start')">Start work</button>
       </section>
+      <RequestEquipment v-if="data.request && data.job.asset_id" :request-id="data.job.request_id" :status="data.request.status"/>
+      <p v-else-if="data.job.asset_code">Equipment · {{data.job.asset_code}}</p>
       <template v-if="owned && data.request.status === 'in_progress'">
         <form class="panel" @submit.prevent="act('progress', { body: progress })">
           <h2>Work progress</h2>

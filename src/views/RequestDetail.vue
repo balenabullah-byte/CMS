@@ -1,5 +1,6 @@
 <script setup>
 import DeadlineTargets from "../components/DeadlineTargets.vue"
+import RequestEquipment from '../components/RequestEquipment.vue'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { api, all } from '../lib/api'
@@ -69,6 +70,7 @@ function post() {
       <div class="detailgrid">
         <div class="stack">
           <DeadlineTargets :request-id="id" />
+          <RequestEquipment v-if="data.r.asset_id" :request-id="id" :status="data.r.status"/>
       <section class="panel">
             <h2>Request description</h2>
             <p class="prose">{{ data.r.description }}</p>

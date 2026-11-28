@@ -3,16 +3,23 @@ import TableModule from './base.module.js';
 import knex from '../connection.js';
 import notifications from './notification.module.js';
 import deadlines from './deadline.module.js';
+import assets from './asset.module.js';
 class MaintenanceModule extends TableModule {
   constructor() { super('maintenance_requests'); }
   async create(fields, db) {
     if (!db) return knex.transaction(trx => this.create(fields,trx));
+    if (fields.asset_id) await assets.validateReport(db,fields);
     const request = await super.create(fields,db);
     await deadlines.snapshot(db,request);
     await notifications.workflow(db,request,fields.reporter_id);
     return request;
   }
   async update(id,fields,db=knex) {
+    if(fields.status==='reopened') {
+      // A reopened request counts as unresolved. Serialize that transition
+      // with transfer and retirement using the same registration row lock.
+      await db('assets').whereIn('id',db(this.table).where({id}).select('asset_id')).forUpdate().first('id');
+    }
     const request = await super.update(id,fields,db);
     if (fields.status) {
       await deadlines.milestone(db,request);
@@ -31,7 +38,7 @@ class MaintenanceModule extends TableModule {
       });
     }
     if (!user.roles.includes('coordinator')) {
-      query.select('id','reporter_id','building_id','room_id','category_id','location_note','title',
+      query.select('id','reporter_id','building_id','room_id','asset_id','category_id','location_note','title',
         'description','status','priority','created_at','updated_at','closed_at');
       query.select(knex.raw("CASE WHEN status IN ('closed','rejected') THEN status_note END AS status_note"));
     }

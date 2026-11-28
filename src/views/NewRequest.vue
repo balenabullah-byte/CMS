@@ -1,7 +1,8 @@
 ﻿<script setup>
-import { reactive, computed } from 'vue'
+import { reactive, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '../lib/api'
+import {assetOptions} from '../lib/assets'
 import { useWorkspace, usePage, useAction } from '../lib/workspace'
 import LoadState from '../components/LoadState.vue'
 const w = useWorkspace(),
@@ -9,6 +10,7 @@ const w = useWorkspace(),
   form = reactive({
     building_id: '',
     room_id: '',
+    asset_id: '',
     category_id: '',
     title: '',
     description: '',
@@ -19,6 +21,10 @@ const { data, loading, error, refresh } = usePage(() => w.catalog()),
 const rooms = computed(
   () => data.value?.rooms.filter((r) => r.is_active && r.building_id === form.building_id) || [],
 )
+watch(()=>[form.building_id,form.room_id],()=>{form.asset_id=''})
+const equipment=usePage(signal=>form.building_id?assetOptions('/asset-lookup',{
+  building_id:form.building_id,...(form.room_id && {room_id:form.room_id})
+},signal):[],()=>[form.building_id,form.room_id])
 function submit() {
   run(async () => {
     const body = Object.fromEntries(Object.entries(form).filter(([, v]) => v !== ''))
@@ -48,6 +54,14 @@ function submit() {
           <option v-for="r in rooms" :value="r.id">{{ r.room_code }}</option>
         </select>
       </label>
+      <label>
+        Equipment (optional)
+        <select v-model="form.asset_id" :disabled="!form.building_id || equipment.loading.value">
+          <option value="">General location issue</option>
+          <option v-for="e in equipment.data.value" :key="e.id" :value="e.id">{{ e.asset_code }} · {{ e.name }}</option>
+        </select>
+      </label>
+      <p v-if="equipment.error.value" role="alert">{{equipment.error.value}} <button type="button" @click="equipment.refresh">Retry equipment lookup</button></p>
       <label>
         Category
         <select aria-label="Category" v-model="form.category_id" required>

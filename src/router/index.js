@@ -9,6 +9,10 @@ const route = (path, name, view, roles) => ({
 })
 const readers = ['coordinator', 'technician', 'campus_member']
 const pages = [
+    route('/assets','Asset directory','Assets',['admin','coordinator']),
+    route('/assets/:id(\\d+)','Asset details','AssetDetail',['admin','coordinator']),
+    route('/asset-categories','Asset categories','Assets',['admin']),
+    route('/analytics/assets','Asset analytics','AssetAnalytics',['admin']),
     route('/specializations','Technician specializations','Operations',['admin','coordinator','technician']),
     route('/notifications','Notifications','Operations'),
     route('/audit-logs','Administrative audit','Operations',['admin']),

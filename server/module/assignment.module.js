@@ -9,6 +9,7 @@ class AssignmentModule extends TableModule {
   base(user) {
     const query = knex('work_assignments as a')
       .join('maintenance_requests as r', 'r.id', 'a.request_id')
+      .leftJoin('assets as equipment','equipment.id','r.asset_id')
       .join('users as u', 'u.id', 'a.technician_id')
        .join('buildings as b','b.id','r.building_id').leftJoin('rooms as rm','rm.id','r.room_id')
       .join('maintenance_categories as c','c.id','r.category_id');
@@ -24,7 +25,7 @@ class AssignmentModule extends TableModule {
       knex.raw('IF(a.ended_at IS NULL,r.status,NULL) AS status'),
       knex.raw('IF(a.ended_at IS NULL,r.priority,NULL) AS priority')
     ];
-    return query.select('a.*','r.title',...liveFields,'r.building_id','r.room_id','r.category_id',
+    return query.select('a.*','r.title','r.asset_id','equipment.asset_code',...liveFields,'r.building_id','r.room_id','r.category_id',
       'b.name as building','rm.room_code','c.name as category','u.full_name as technician_name',
       knex.raw(elapsed + ' as elapsed_minutes'));
   }

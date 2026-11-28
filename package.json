@@ -8,6 +8,7 @@
     "test": "node --test server/tests/*.test.js",
     "test:api": "node server/tests/api-full-test.mjs",
     "test:visibility": "npm run build && node server/tests/technician-visibility.mjs",
+    "test:assets": "npm run build && node server/tests/asset-management.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "test:ui": "npm run build && node server/tests/ui-integration.mjs"

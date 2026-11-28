@@ -7,6 +7,7 @@ const day = J.string().pattern(/^\d{4}-\d{2}-\d{2}$/).custom((s, h) => {
   return !Number.isNaN(+value) && value.toISOString().slice(0,10) === s ? s : h.error('any.invalid');
 });
 const duration = J.number().integer().min(0).max(10000000);
+export {day as calendarDay};
 const dimensions = { building_id:id, room_id:id, category_id:id, priority:choice('low','normal','high'),
   status:choice(...requestStates), from:day, to:day };
 export const assignmentFields = { ...dimensions, technician_id:id, search:str(150),

@@ -20,6 +20,21 @@
   --warn: light-dark(#804d00, #ffda8c);
   background: var(--canvas);
 }
+.workspace dialog.asset-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+  padding: 1.25rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+}
+.asset-dialog::backdrop { background: rgb(12 24 40 / 48%); }
+.asset-dialog form > h2 { margin-bottom: .75rem; }
 :root[data-theme="light"] { color-scheme: light; }
 :root[data-theme="dark"] { color-scheme: dark; }
 @font-face {
@@ -279,17 +294,20 @@
   color: var(--link);
 }
 .workspace .tone-approved,
+.workspace .tone-operational,
 .workspace .tone-low,
 .workspace .tone-closed {
   background: var(--good-bg);
   color: var(--good);
 }
 .workspace .tone-high,
+.workspace .tone-out_of_service,
 .workspace .tone-rejected {
   background: var(--bad-bg);
   color: var(--bad);
 }
 .workspace .tone-reopened,
+.workspace .tone-under_maintenance,
 .workspace .tone-normal {
   background: var(--warn-bg);
   color: var(--warn);
